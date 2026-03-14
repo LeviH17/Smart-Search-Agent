@@ -150,7 +150,8 @@ export function usePipeline() {
     let currentEvent = "message";
 
     try {
-      const response = await fetch("/api/run-pipeline", {
+      const apiBase = import.meta.env.VITE_API_URL ?? "";
+      const response = await fetch(`${apiBase}/api/run-pipeline`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body,
