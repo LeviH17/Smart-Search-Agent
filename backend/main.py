@@ -79,6 +79,6 @@ async def health():
 
 
 # Serve built frontend in production
-frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
+frontend_dist = os.getenv("FRONTEND_DIST") or os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
 if os.path.isdir(frontend_dist):
     app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="static")
