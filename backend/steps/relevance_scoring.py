@@ -5,6 +5,7 @@ from models import Snippet, ScoringResult, EntityResult
 from prompts import RELEVANCE_SCORING_SYSTEM, RELEVANCE_SCORING_USER
 
 THRESHOLD = 0.80
+BATCH_SIZE = 20  # max concurrent Haiku calls per batch
 
 
 async def _score_snippet(snippet: Snippet, intent: str, entity: EntityResult,
@@ -33,19 +34,22 @@ async def _score_snippet(snippet: Snippet, intent: str, entity: EntityResult,
     raw = raw.strip()
 
     data = json.loads(raw)
-    scored = snippet.model_copy(update={
+    return snippet.model_copy(update={
         "relevance_score": float(data.get("score", 0.0)),
         "relevance_label": data.get("label", "Irrelevant"),
         "relevance_reason": data.get("reason", "")
     })
-    return scored
 
 
 async def run(snippets: list[Snippet], entity: EntityResult, intent: str,
               iteration: int, client: anthropic.AsyncAnthropic) -> ScoringResult:
-    # Score all snippets concurrently
-    tasks = [_score_snippet(s, intent, entity, client) for s in snippets]
-    scored_snippets = await asyncio.gather(*tasks)
+    # Score in batches to avoid rate limits
+    scored_snippets: list[Snippet] = []
+    for i in range(0, len(snippets), BATCH_SIZE):
+        batch = snippets[i:i + BATCH_SIZE]
+        tasks = [_score_snippet(s, intent, entity, client) for s in batch]
+        results = await asyncio.gather(*tasks)
+        scored_snippets.extend(results)
 
     relevant_count = sum(
         1 for s in scored_snippets
@@ -55,7 +59,7 @@ async def run(snippets: list[Snippet], entity: EntityResult, intent: str,
     precision = relevant_count / total if total > 0 else 0.0
 
     return ScoringResult(
-        snippets=list(scored_snippets),
+        snippets=scored_snippets,
         precision=precision,
         threshold=THRESHOLD,
         passed=precision >= THRESHOLD,

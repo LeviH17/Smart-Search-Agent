@@ -12,13 +12,13 @@ async def run(current_boolean: BooleanQueryResult, scoring: ScoringResult,
     relevant_snippets = [s for s in scoring.snippets if s.relevance_label == "Relevant"]
 
     noise_examples = "\n".join(
-        f'- "{s.text[:120]}..." (reason: {s.relevance_reason})'
-        for s in noise_snippets[:3]
+        f'- "{s.text[:150]}..." (reason: {s.relevance_reason})'
+        for s in noise_snippets[:10]
     ) or "None"
 
     relevant_examples = "\n".join(
-        f'- "{s.text[:120]}..."'
-        for s in relevant_snippets[:3]
+        f'- "{s.text[:150]}..."'
+        for s in relevant_snippets[:10]
     ) or "None"
 
     somewhat_relevant = sum(1 for s in scoring.snippets if s.relevance_label == "Somewhat Relevant")
