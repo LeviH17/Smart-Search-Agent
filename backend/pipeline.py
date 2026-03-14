@@ -98,11 +98,11 @@ async def run_pipeline(
     # ── Step 3: Fetch snippets ────────────────────────────────────────────────
     await emit("step_start", "snippet_fetch", {
         "label": "Fetching sample snippets",
-        "description": "Pulling a sample of matching results from the data source."
+        "description": "Generating a realistic sample of matching results based on your entity."
     }, 0)
 
     try:
-        snippets = await snippet_fetch.run(boolean, entity)
+        snippets = await snippet_fetch.run(boolean, entity, client)
     except Exception as e:
         await emit("step_error", "snippet_fetch", {"message": str(e), "recoverable": False}, 0)
         return
@@ -210,7 +210,7 @@ async def run_pipeline(
 
         try:
             current_snippets = await snippet_fetch.run_filtered(
-                current_boolean, entity, current_smart_prompt
+                current_boolean, entity, current_smart_prompt, client
             )
         except Exception as e:
             await emit("step_error", "filtered_snippet_fetch", {"message": str(e), "recoverable": False}, iteration)

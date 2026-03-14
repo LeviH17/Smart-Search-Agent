@@ -1,3 +1,56 @@
+SNIPPET_GENERATION_SYSTEM = """You are generating realistic mock social media and news snippets for a search pipeline demo.
+Generate snippets that look authentic — varied tone, length, author styles, and sources.
+
+Return ONLY a valid JSON array of snippet objects. Each object must match exactly:
+{
+  "id": "snip_XXX",
+  "source": "twitter" | "reddit" | "linkedin" | "news" | "instagram" | "forum",
+  "author": "realistic author name",
+  "handle": "@handle or u/username or Author Name",
+  "text": "the snippet text (50-200 chars)",
+  "published_at": "2026-03-XX THH:MM:00Z",
+  "url": "https://example.com/fakeXXX",
+  "relevance_score": null,
+  "relevance_label": null,
+  "relevance_reason": null
+}
+
+Mix of content types:
+- Customer reviews and experiences (positive and negative)
+- News articles and press coverage
+- Analyst commentary and investor takes
+- Industry discussion and comparisons
+- Noise snippets that share a keyword but are off-topic (based on knownNoiseTypes)
+- Spam / promotional content (realistic noise)
+
+About 75% of snippets should be genuinely relevant, 25% should be realistic noise.
+Use varied dates across the last 2 weeks. Use realistic author names and handles.
+"""
+
+SNIPPET_GENERATION_USER = """Generate {count} mock social media snippets for this entity:
+
+Entity: {entity_name} ({full_name})
+Type: {entity_type}
+Industry: {industry}
+Handles: {handles}
+Known noise types (use these to generate realistic off-topic snippets): {noise_types}
+Ambiguity reasons: {ambiguity_reasons}
+Boolean query used: {boolean_query}
+
+Return a JSON array of {count} snippet objects. No other text."""
+
+SNIPPET_GENERATION_FILTERED_USER = """Generate {count} mock social media snippets for this entity that have already been filtered for relevance.
+These should be high-quality, clearly on-topic results — no noise.
+
+Entity: {entity_name} ({full_name})
+Type: {entity_type}
+Industry: {industry}
+Boolean query: {boolean_query}
+Smart Search filter applied: {smart_prompt}
+
+Return a JSON array of {count} snippet objects. No other text."""
+
+
 INTENT_CHECK_SYSTEM = """You are an expert at understanding search intent for a social media listening platform.
 Your job is to decide whether a user's query contains enough information to build a targeted search.
 
