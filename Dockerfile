@@ -19,4 +19,4 @@ COPY --from=frontend-builder /app/dist ./frontend_dist/
 ENV FRONTEND_DIST=/app/frontend_dist
 
 EXPOSE 8000
-CMD ["python3", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD python3 -m uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}
