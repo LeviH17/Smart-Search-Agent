@@ -4,7 +4,7 @@ import anthropic
 from models import BooleanQueryResult, Snippet, EntityResult
 from prompts import SNIPPET_GENERATION_SYSTEM, SNIPPET_GENERATION_USER, SNIPPET_GENERATION_FILTERED_USER
 
-SNIPPET_COUNT = 15
+SNIPPET_COUNT = 100
 
 
 def _parse_snippets(raw: str) -> list[Snippet]:
@@ -46,7 +46,7 @@ async def run(boolean: BooleanQueryResult, entity: EntityResult,
 
     response = await client.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens=4096,
+        max_tokens=16000,
         system=SNIPPET_GENERATION_SYSTEM,
         messages=[{"role": "user", "content": user_content}]
     )
@@ -69,7 +69,7 @@ async def run_filtered(boolean: BooleanQueryResult, entity: EntityResult,
 
     response = await client.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens=4096,
+        max_tokens=16000,
         system=SNIPPET_GENERATION_SYSTEM,
         messages=[{"role": "user", "content": user_content}]
     )
