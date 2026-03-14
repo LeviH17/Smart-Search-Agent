@@ -1,24 +1,25 @@
 import json
+import asyncio
 import anthropic
 from models import Snippet, ScoringResult, EntityResult
 from prompts import RELEVANCE_SCORING_SYSTEM, RELEVANCE_SCORING_BATCH_USER
 
 THRESHOLD = 0.80
+BATCH_SIZE = 50  # Two concurrent batches of 50 — each fits within 8192 output tokens
 
 
-async def run(snippets: list[Snippet], entity: EntityResult, intent: str,
-              iteration: int, client: anthropic.AsyncAnthropic) -> ScoringResult:
-    # Build a compact representation for each snippet
+async def _score_batch(batch: list[Snippet], intent: str, entity: EntityResult,
+                       client: anthropic.AsyncAnthropic) -> list[dict]:
     snippets_json = json.dumps([
         {"id": s.id, "source": s.source, "author": s.author, "text": s.text}
-        for s in snippets
+        for s in batch
     ], indent=2)
 
     user_content = RELEVANCE_SCORING_BATCH_USER.format(
         intent=intent,
         entity_name=entity.entityName,
         entity_type=entity.entityType,
-        count=len(snippets),
+        count=len(batch),
         snippets_json=snippets_json,
     )
 
@@ -36,10 +37,22 @@ async def run(snippets: list[Snippet], entity: EntityResult, intent: str,
             raw = raw[4:]
     raw = raw.strip()
 
-    results = json.loads(raw)
+    return json.loads(raw)
 
-    # Build lookup from id → result
-    result_map = {r["id"]: r for r in results}
+
+async def run(snippets: list[Snippet], entity: EntityResult, intent: str,
+              iteration: int, client: anthropic.AsyncAnthropic) -> ScoringResult:
+    # Split into batches and score concurrently
+    batches = [snippets[i:i + BATCH_SIZE] for i in range(0, len(snippets), BATCH_SIZE)]
+    batch_results = await asyncio.gather(*[
+        _score_batch(batch, intent, entity, client) for batch in batches
+    ])
+
+    # Flatten results into a lookup map
+    result_map: dict[str, dict] = {}
+    for results in batch_results:
+        for r in results:
+            result_map[r["id"]] = r
 
     scored_snippets: list[Snippet] = []
     for s in snippets:
