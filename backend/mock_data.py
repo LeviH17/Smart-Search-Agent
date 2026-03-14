@@ -1,270 +1,137 @@
 from models import Snippet
 
-# Mock snippets tagged by topic for internal filtering
-# Each snippet has a `_topics` field used by snippet_fetch.py (not exposed externally)
-
 MOCK_SNIPPETS: list[dict] = [
-    # --- Apple Inc. ---
-    {
-        "snippet": Snippet(
-            id="snip_001", source="twitter", author="CNBC Markets", handle="@CNBCMarkets",
-            text="$AAPL just crossed $3.5T market cap again. Tim Cook says Vision Pro pipeline is stronger than ever. #Apple #AAPL",
-            published_at="2026-03-12T14:30:00Z", url="https://twitter.com/CNBCMarkets/status/fake001"
-        ),
-        "topics": ["apple_inc", "tech_general"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_002", source="reddit", author="u/investorwatcher", handle="u/investorwatcher",
-            text="Apple's Q1 earnings blew past estimates again. Services revenue hit $26B. The app store is basically a money printer at this point.",
-            published_at="2026-03-11T09:15:00Z", url="https://reddit.com/r/stocks/fake002"
-        ),
-        "topics": ["apple_inc"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_003", source="news", author="The Verge", handle="@verge",
-            text="Apple's new M4 MacBook Pro is here and it's absolutely destroying benchmarks. Final Cut Pro render times cut by 40%.",
-            published_at="2026-03-10T18:00:00Z", url="https://theverge.com/fake003"
-        ),
-        "topics": ["apple_inc"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_004", source="twitter", author="Ming-Chi Kuo", handle="@mingchikuo",
-            text="My sources indicate Apple iPhone 17 production ramp is ahead of schedule. Expect record shipments in H2 2026. #Apple #iPhone17",
-            published_at="2026-03-09T11:00:00Z", url="https://twitter.com/mingchikuo/fake004"
-        ),
-        "topics": ["apple_inc"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_005", source="reddit", author="u/appledeveloper99", handle="u/appledeveloper99",
-            text="Apple's App Store guidelines update is killing indie developers. 30% cut is just too high when Google Play is offering 15% for most apps.",
-            published_at="2026-03-08T16:45:00Z", url="https://reddit.com/r/apple/fake005"
-        ),
-        "topics": ["apple_inc"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_006", source="linkedin", author="Horace Dediu", handle="Horace Dediu",
-            text="Apple's installed base has now exceeded 2.3 billion active devices. The loyalty rate among iPhone users remains the highest in consumer electronics at ~92%.",
-            published_at="2026-03-07T10:00:00Z", url="https://linkedin.com/fake006"
-        ),
-        "topics": ["apple_inc"]
-    },
-    # --- Apple fruit / noise ---
-    {
-        "snippet": Snippet(
-            id="snip_007", source="instagram", author="RecipeWorld", handle="@recipeworld",
-            text="🍎 My grandmother's apple pie recipe is finally online! Brown sugar, cinnamon, and Granny Smith apples. So good. Link in bio!",
-            published_at="2026-03-12T08:00:00Z", url="https://instagram.com/fake007"
-        ),
-        "topics": ["apple_fruit", "noise"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_008", source="twitter", author="OrchardLife", handle="@orchardlife",
-            text="Apple harvest season is starting early this year due to warmer temps. Upstate NY orchards reporting 20% higher yields. #apple #farming",
-            published_at="2026-03-11T07:30:00Z", url="https://twitter.com/orchardlife/fake008"
-        ),
-        "topics": ["apple_fruit", "noise"]
-    },
-    # --- Amazon ---
-    {
-        "snippet": Snippet(
-            id="snip_009", source="twitter", author="@logistics_nerd", handle="@logistics_nerd",
-            text="Amazon's same-day delivery is expanding to 15 new cities. Their logistics network is genuinely hard to compete with. $AMZN",
-            published_at="2026-03-12T13:00:00Z", url="https://twitter.com/logisticsnerd/fake009"
-        ),
-        "topics": ["amazon_inc"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_010", source="reddit", author="u/primeuser99", handle="u/primeuser99",
-            text="Amazon's return policy has gotten so much worse. Used to be seamless, now it takes 2 weeks to get a refund. Considering Walmart+.",
-            published_at="2026-03-11T15:00:00Z", url="https://reddit.com/r/amazon/fake010"
-        ),
-        "topics": ["amazon_inc"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_011", source="news", author="Reuters", handle="Reuters",
-            text="Amazon Web Services announced record cloud revenue as enterprise adoption surges. CEO Andy Jassy highlighted AI infrastructure investments.",
-            published_at="2026-03-10T12:00:00Z", url="https://reuters.com/fake011"
-        ),
-        "topics": ["amazon_inc"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_012", source="twitter", author="@climatewatch", handle="@climatewatch",
-            text="The Amazon rainforest lost another 2,400 sq km of tree cover last quarter. Deforestation rates continue despite global pledges. #Amazon",
-            published_at="2026-03-12T09:00:00Z", url="https://twitter.com/climatewatch/fake012"
-        ),
-        "topics": ["amazon_rainforest", "noise"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_013", source="forum", author="SmallBizOwner", handle="SmallBizOwner",
-            text="Selling on Amazon has become nearly impossible for small businesses. The fees keep going up and they keep prioritizing their own brands.",
-            published_at="2026-03-09T14:00:00Z", url="https://forum.fake013"
-        ),
-        "topics": ["amazon_inc"]
-    },
-    # --- Tesla ---
-    {
-        "snippet": Snippet(
-            id="snip_014", source="twitter", author="Sawyer Merritt", handle="@SawyerMerritt",
-            text="Tesla FSD v13.2 just dropped and the improvement is significant. Highway driving is now genuinely hands-off. $TSLA #Tesla",
-            published_at="2026-03-12T17:00:00Z", url="https://twitter.com/sawyermerritt/fake014"
-        ),
-        "topics": ["tesla"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_015", source="reddit", author="u/teslainvestor", handle="u/teslainvestor",
-            text="Tesla's Cybertruck production finally ramping. They shipped 28k units last quarter vs 12k the quarter before. Still losing money per truck though.",
-            published_at="2026-03-11T11:00:00Z", url="https://reddit.com/r/tsla/fake015"
-        ),
-        "topics": ["tesla"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_016", source="news", author="Bloomberg", handle="@bloomberg",
-            text="Tesla cuts Model Y prices again in Europe by 4%, intensifying pressure on legacy automakers. The EV price war shows no sign of ending.",
-            published_at="2026-03-10T09:00:00Z", url="https://bloomberg.com/fake016"
-        ),
-        "topics": ["tesla"]
-    },
-    # --- NVIDIA ---
-    {
-        "snippet": Snippet(
-            id="snip_017", source="twitter", author="Jensen Huang", handle="@JensenHuang",
-            text="Blackwell architecture is shipping at scale. Every major cloud provider is deploying GB200 clusters. The AI infrastructure build-out is just getting started.",
-            published_at="2026-03-12T16:00:00Z", url="https://twitter.com/jensenhuang/fake017"
-        ),
-        "topics": ["nvidia"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_018", source="reddit", author="u/airesearcher", handle="u/airesearcher",
-            text="NVIDIA's H200 is 2x faster than H100 for LLM inference. But the $40k price tag is insane. AMD MI300X at $20k is looking more attractive.",
-            published_at="2026-03-11T13:00:00Z", url="https://reddit.com/r/MachineLearning/fake018"
-        ),
-        "topics": ["nvidia"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_019", source="news", author="Financial Times", handle="@FT",
-            text="Nvidia's market cap briefly overtook Apple's again on Wednesday as AI chip demand continues to surge. $NVDA up 8% this week.",
-            published_at="2026-03-12T18:30:00Z", url="https://ft.com/fake019"
-        ),
-        "topics": ["nvidia", "apple_inc"]
-    },
-    # --- Generic tech noise ---
-    {
-        "snippet": Snippet(
-            id="snip_020", source="twitter", author="TechCrunch", handle="@TechCrunch",
-            text="Big Tech earnings season kicks off next week. All eyes on cloud revenue growth and AI capex guidance.",
-            published_at="2026-03-10T10:00:00Z", url="https://techcrunch.com/fake020"
-        ),
-        "topics": ["tech_general"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_021", source="reddit", author="u/marketwatcher", handle="u/marketwatcher",
-            text="The Nasdaq is up 2.3% today driven by tech earnings optimism. Hard to not be bullish right now honestly.",
-            published_at="2026-03-11T14:30:00Z", url="https://reddit.com/r/investing/fake021"
-        ),
-        "topics": ["tech_general", "noise"]
-    },
-    # --- Elon Musk ---
-    {
-        "snippet": Snippet(
-            id="snip_022", source="twitter", author="Elon Musk", handle="@elonmusk",
-            text="xAI's Grok 3 is now the most capable AI model on every benchmark. Open weights coming next month.",
-            published_at="2026-03-12T20:00:00Z", url="https://twitter.com/elonmusk/fake022"
-        ),
-        "topics": ["elon_musk", "tesla"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_023", source="news", author="Wall Street Journal", handle="@WSJ",
-            text="Elon Musk's political activities are creating headwinds for Tesla's brand in Europe, according to new polling data from YouGov.",
-            published_at="2026-03-11T08:00:00Z", url="https://wsj.com/fake023"
-        ),
-        "topics": ["elon_musk", "tesla"]
-    },
-    # --- Microsoft ---
-    {
-        "snippet": Snippet(
-            id="snip_024", source="linkedin", author="Satya Nadella", handle="Satya Nadella",
-            text="Microsoft Copilot now has 300M monthly active users across M365. AI is fundamentally changing how people work.",
-            published_at="2026-03-10T11:00:00Z", url="https://linkedin.com/fake024"
-        ),
-        "topics": ["microsoft"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_025", source="reddit", author="u/enterprise_dev", handle="u/enterprise_dev",
-            text="Azure OpenAI Service is genuinely good now. We migrated our internal tools from OpenAI API and the reliability is night and day. Plus the SLA actually matters.",
-            published_at="2026-03-09T15:00:00Z", url="https://reddit.com/r/azure/fake025"
-        ),
-        "topics": ["microsoft"]
-    },
-    # --- Google ---
-    {
-        "snippet": Snippet(
-            id="snip_026", source="twitter", author="Google", handle="@Google",
-            text="Gemini 2.5 Ultra is now available in Google AI Studio. 1M token context window, native multimodal, and dramatically improved reasoning.",
-            published_at="2026-03-12T15:00:00Z", url="https://twitter.com/google/fake026"
-        ),
-        "topics": ["google"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_027", source="news", author="The Guardian", handle="@guardian",
-            text="Google faces new EU antitrust fine over search advertising dominance. Regulators allege preferential treatment of Google Shopping results.",
-            published_at="2026-03-11T10:00:00Z", url="https://theguardian.com/fake027"
-        ),
-        "topics": ["google"]
-    },
-    # --- OpenAI ---
-    {
-        "snippet": Snippet(
-            id="snip_028", source="twitter", author="Sam Altman", handle="@sama",
-            text="GPT-5 is the biggest leap we've made. It's genuinely a different category of system. Rolling out to Plus users this week.",
-            published_at="2026-03-12T12:00:00Z", url="https://twitter.com/sama/fake028"
-        ),
-        "topics": ["openai"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_029", source="reddit", author="u/aiuser", handle="u/aiuser",
-            text="OpenAI's pricing is getting ridiculous. $200/month for ChatGPT Pro? Anthropic Claude is way better value and honestly better at coding tasks.",
-            published_at="2026-03-10T20:00:00Z", url="https://reddit.com/r/ChatGPT/fake029"
-        ),
-        "topics": ["openai"]
-    },
-    {
-        "snippet": Snippet(
-            id="snip_030", source="news", author="Bloomberg", handle="@bloomberg",
-            text="OpenAI closes $10B funding round at $300B valuation. SoftBank leads the round as AI infrastructure spending accelerates.",
-            published_at="2026-03-09T09:00:00Z", url="https://bloomberg.com/fake030"
-        ),
-        "topics": ["openai"]
-    },
+    # ── Apple Inc. ────────────────────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_001", source="twitter", author="CNBC Markets", handle="@CNBCMarkets", text="$AAPL just crossed $3.5T market cap again. Tim Cook says Vision Pro pipeline is stronger than ever. #Apple #AAPL", published_at="2026-03-12T14:30:00Z", url="https://twitter.com/fake001"), "topics": ["apple_inc", "tech_general"]},
+    {"snippet": Snippet(id="snip_002", source="reddit", author="u/investorwatcher", handle="u/investorwatcher", text="Apple's Q1 earnings blew past estimates again. Services revenue hit $26B. The App Store is basically a money printer at this point.", published_at="2026-03-11T09:15:00Z", url="https://reddit.com/fake002"), "topics": ["apple_inc"]},
+    {"snippet": Snippet(id="snip_003", source="news", author="The Verge", handle="@verge", text="Apple's new M4 MacBook Pro is here and it's absolutely destroying benchmarks. Final Cut Pro render times cut by 40%.", published_at="2026-03-10T18:00:00Z", url="https://theverge.com/fake003"), "topics": ["apple_inc"]},
+    {"snippet": Snippet(id="snip_004", source="twitter", author="Ming-Chi Kuo", handle="@mingchikuo", text="My sources indicate Apple iPhone 17 production ramp is ahead of schedule. Expect record shipments in H2 2026. #Apple #iPhone17", published_at="2026-03-09T11:00:00Z", url="https://twitter.com/fake004"), "topics": ["apple_inc"]},
+    {"snippet": Snippet(id="snip_005", source="reddit", author="u/appledeveloper99", handle="u/appledeveloper99", text="Apple's App Store guidelines update is killing indie developers. 30% cut is too high when Google Play offers 15% for most apps.", published_at="2026-03-08T16:45:00Z", url="https://reddit.com/fake005"), "topics": ["apple_inc"]},
+    {"snippet": Snippet(id="snip_006", source="linkedin", author="Horace Dediu", handle="Horace Dediu", text="Apple's installed base has exceeded 2.3 billion active devices. iPhone loyalty rate remains the highest in consumer electronics at ~92%.", published_at="2026-03-07T10:00:00Z", url="https://linkedin.com/fake006"), "topics": ["apple_inc"]},
+    {"snippet": Snippet(id="snip_007", source="twitter", author="Mark Gurman", handle="@markgurman", text="Apple is planning a major Siri overhaul for WWDC. On-device LLM processing, no cloud uploads. This is the biggest AI push Apple has made. #Apple", published_at="2026-03-06T09:00:00Z", url="https://twitter.com/fake007"), "topics": ["apple_inc"]},
+    {"snippet": Snippet(id="snip_008", source="news", author="Reuters", handle="Reuters", text="Apple faces EU Digital Markets Act probe over App Store compliance. Regulators say Apple's fee structure still doesn't meet open market requirements.", published_at="2026-03-05T11:30:00Z", url="https://reuters.com/fake008"), "topics": ["apple_inc"]},
+    {"snippet": Snippet(id="snip_009", source="reddit", author="u/switcher2026", handle="u/switcher2026", text="Just switched from Android to iPhone 16 Pro. The camera system is genuinely unreal. Portrait mode with the new sensors is leagues ahead.", published_at="2026-03-04T20:00:00Z", url="https://reddit.com/fake009"), "topics": ["apple_inc"]},
+    {"snippet": Snippet(id="snip_010", source="forum", author="DevAdvocate", handle="DevAdvocate", text="Apple Silicon now powers 80% of Mac sales. The M4 chip's neural engine is enabling entirely new categories of pro apps.", published_at="2026-03-03T14:00:00Z", url="https://forum.fake010"), "topics": ["apple_inc"]},
+    {"snippet": Snippet(id="snip_011", source="twitter", author="Wall Street Journal", handle="@WSJ", text="Apple's services segment — App Store, Apple TV+, iCloud, Apple Pay — now generates more profit per quarter than its iPhone hardware. $AAPL", published_at="2026-03-02T10:00:00Z", url="https://twitter.com/fake011"), "topics": ["apple_inc"]},
+    {"snippet": Snippet(id="snip_012", source="news", author="9to5Mac", handle="@9to5mac", text="Apple Vision Pro 2 rumored for late 2026 with lighter form factor and 40% lower price. Adoption has been slower than Apple projected.", published_at="2026-03-01T15:00:00Z", url="https://9to5mac.com/fake012"), "topics": ["apple_inc"]},
+    # ── Apple fruit / noise ───────────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_013", source="instagram", author="RecipeWorld", handle="@recipeworld", text="🍎 My grandmother's apple pie recipe is finally online! Brown sugar, cinnamon, Granny Smith apples. Link in bio!", published_at="2026-03-12T08:00:00Z", url="https://instagram.com/fake013"), "topics": ["apple_fruit", "noise"]},
+    {"snippet": Snippet(id="snip_014", source="twitter", author="OrchardLife", handle="@orchardlife", text="Apple harvest season is starting early due to warmer temps. Upstate NY orchards reporting 20% higher yields. #apple #farming", published_at="2026-03-11T07:30:00Z", url="https://twitter.com/fake014"), "topics": ["apple_fruit", "noise"]},
+    {"snippet": Snippet(id="snip_015", source="reddit", author="u/nutritionista", handle="u/nutritionista", text="An apple a day keeps the doctor away? New study says eating 2 apples daily reduces LDL cholesterol by 12%. The pectin fiber is key.", published_at="2026-03-10T06:00:00Z", url="https://reddit.com/fake015"), "topics": ["apple_fruit", "noise"]},
+    {"snippet": Snippet(id="snip_016", source="news", author="FoodNetwork", handle="@FoodNetwork", text="Caramel apple season is here. Our 10 best caramel apple recipes ranked — from classic to salted pretzel. #apple #fall #recipes", published_at="2026-03-09T12:00:00Z", url="https://foodnetwork.com/fake016"), "topics": ["apple_fruit", "noise"]},
+    # ── Amazon Inc. ───────────────────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_017", source="twitter", author="@logistics_nerd", handle="@logistics_nerd", text="Amazon's same-day delivery expanding to 15 new cities. Their logistics network is genuinely hard to compete with. $AMZN", published_at="2026-03-12T13:00:00Z", url="https://twitter.com/fake017"), "topics": ["amazon_inc"]},
+    {"snippet": Snippet(id="snip_018", source="reddit", author="u/primeuser99", handle="u/primeuser99", text="Amazon's return policy has gotten so much worse. Used to be seamless, now it takes 2 weeks for a refund. Considering Walmart+.", published_at="2026-03-11T15:00:00Z", url="https://reddit.com/fake018"), "topics": ["amazon_inc"]},
+    {"snippet": Snippet(id="snip_019", source="news", author="Reuters", handle="Reuters", text="Amazon Web Services announces record cloud revenue as enterprise adoption surges. CEO Andy Jassy highlighted AI infrastructure investments.", published_at="2026-03-10T12:00:00Z", url="https://reuters.com/fake019"), "topics": ["amazon_inc"]},
+    {"snippet": Snippet(id="snip_020", source="forum", author="SmallBizOwner", handle="SmallBizOwner", text="Selling on Amazon has become nearly impossible for small businesses. Fees keep going up and they keep prioritizing their own brands.", published_at="2026-03-09T14:00:00Z", url="https://forum.fake020"), "topics": ["amazon_inc"]},
+    {"snippet": Snippet(id="snip_021", source="twitter", author="@retailanalyst", handle="@retailanalyst", text="Amazon Prime now has 230M subscribers globally. Prime Video is the linchpin — churn is 4x lower for subscribers who watch weekly. $AMZN", published_at="2026-03-08T10:00:00Z", url="https://twitter.com/fake021"), "topics": ["amazon_inc"]},
+    {"snippet": Snippet(id="snip_022", source="news", author="Financial Times", handle="@FT", text="Amazon's private label strategy faces antitrust scrutiny in the US and EU. FTC alleges Amazon used third-party seller data to undercut them.", published_at="2026-03-07T09:00:00Z", url="https://ft.com/fake022"), "topics": ["amazon_inc"]},
+    {"snippet": Snippet(id="snip_023", source="reddit", author="u/cord_cutter", handle="u/cord_cutter", text="Prime Video's content quality has been declining. Feels like Amazon is spreading too thin — hardware, streaming, grocery, pharmacy.", published_at="2026-03-06T18:00:00Z", url="https://reddit.com/fake023"), "topics": ["amazon_inc"]},
+    {"snippet": Snippet(id="snip_024", source="linkedin", author="Andy Jassy", handle="Andy Jassy", text="AWS just launched 12 new AI services at re:Invent. Our goal: make building with AI as easy as building any other software. Exciting times.", published_at="2026-03-05T11:00:00Z", url="https://linkedin.com/fake024"), "topics": ["amazon_inc"]},
+    {"snippet": Snippet(id="snip_025", source="twitter", author="@ecommercepro", handle="@ecommercepro", text="Amazon Advertising revenue hit $18B last quarter. It's now the 3rd largest digital ad platform behind Google and Meta. Remarkable growth.", published_at="2026-03-04T16:00:00Z", url="https://twitter.com/fake025"), "topics": ["amazon_inc"]},
+    # ── Amazon rainforest noise ───────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_026", source="twitter", author="@climatewatch", handle="@climatewatch", text="The Amazon rainforest lost another 2,400 sq km of tree cover last quarter. Deforestation rates continue despite global pledges.", published_at="2026-03-12T09:00:00Z", url="https://twitter.com/fake026"), "topics": ["amazon_rainforest", "noise"]},
+    {"snippet": Snippet(id="snip_027", source="news", author="BBC News", handle="@BBCNews", text="Scientists warn the Amazon river basin may hit a tipping point by 2030. Seasonal droughts are becoming permanent in eastern regions.", published_at="2026-03-08T08:00:00Z", url="https://bbc.com/fake027"), "topics": ["amazon_rainforest", "noise"]},
+    {"snippet": Snippet(id="snip_028", source="reddit", author="u/ecotraveler", handle="u/ecotraveler", text="Just back from a trip along the Amazon river. Incredible biodiversity — pink river dolphins, giant otters. Highly recommend the Manaus route.", published_at="2026-03-05T20:00:00Z", url="https://reddit.com/fake028"), "topics": ["amazon_rainforest", "noise"]},
+    # ── Tesla ─────────────────────────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_029", source="twitter", author="Sawyer Merritt", handle="@SawyerMerritt", text="Tesla FSD v13.2 just dropped and the improvement is significant. Highway driving is now genuinely hands-off. $TSLA #Tesla", published_at="2026-03-12T17:00:00Z", url="https://twitter.com/fake029"), "topics": ["tesla"]},
+    {"snippet": Snippet(id="snip_030", source="reddit", author="u/teslainvestor", handle="u/teslainvestor", text="Tesla's Cybertruck production finally ramping. Shipped 28k units last quarter vs 12k prior quarter. Still losing money per truck though.", published_at="2026-03-11T11:00:00Z", url="https://reddit.com/fake030"), "topics": ["tesla"]},
+    {"snippet": Snippet(id="snip_031", source="news", author="Bloomberg", handle="@bloomberg", text="Tesla cuts Model Y prices again in Europe by 4%, intensifying pressure on legacy automakers. The EV price war shows no sign of ending.", published_at="2026-03-10T09:00:00Z", url="https://bloomberg.com/fake031"), "topics": ["tesla"]},
+    {"snippet": Snippet(id="snip_032", source="twitter", author="@evnews", handle="@evnews", text="Tesla Supercharger network now open to all EVs in North America. Utilization is up 60% since opening. Big revenue upside for $TSLA.", published_at="2026-03-09T14:00:00Z", url="https://twitter.com/fake032"), "topics": ["tesla"]},
+    {"snippet": Snippet(id="snip_033", source="reddit", author="u/modelowner", handle="u/modelowner", text="My Model 3 just hit 200k miles with the original battery at 91% capacity. These cars genuinely last. Maintenance costs have been almost zero.", published_at="2026-03-08T19:00:00Z", url="https://reddit.com/fake033"), "topics": ["tesla"]},
+    {"snippet": Snippet(id="snip_034", source="news", author="The Guardian", handle="@guardian", text="Tesla's market share in Europe fell to 12% as BYD and local brands accelerate EV production. Brand damage from Musk's political stance is a factor.", published_at="2026-03-07T10:00:00Z", url="https://theguardian.com/fake034"), "topics": ["tesla", "elon_musk"]},
+    {"snippet": Snippet(id="snip_035", source="linkedin", author="Sandy Munro", handle="Sandy Munro", text="Tesla's manufacturing efficiency is still 2-3 years ahead of any competitor. The Gigapress casting technique alone saves $2,000 per vehicle.", published_at="2026-03-06T11:00:00Z", url="https://linkedin.com/fake035"), "topics": ["tesla"]},
+    {"snippet": Snippet(id="snip_036", source="twitter", author="@tsla_daily", handle="@tsla_daily", text="Tesla Robotaxi launch confirmed for Austin in June. 20 cars initially, scaling to 1,000 by year end. This is the catalyst everyone's been waiting for. $TSLA", published_at="2026-03-05T16:00:00Z", url="https://twitter.com/fake036"), "topics": ["tesla"]},
+    {"snippet": Snippet(id="snip_037", source="forum", author="EVSkeptic", handle="EVSkeptic", text="Tesla's insurance rates are insane because repairs are so expensive. Replaced a door and it cost $8k. The integrated body panels are a nightmare.", published_at="2026-03-04T15:00:00Z", url="https://forum.fake037"), "topics": ["tesla"]},
+    # ── NVIDIA ────────────────────────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_038", source="twitter", author="Jensen Huang", handle="@JensenHuang", text="Blackwell architecture shipping at scale. Every major cloud provider deploying GB200 clusters. The AI infrastructure build-out is just getting started.", published_at="2026-03-12T16:00:00Z", url="https://twitter.com/fake038"), "topics": ["nvidia"]},
+    {"snippet": Snippet(id="snip_039", source="reddit", author="u/airesearcher", handle="u/airesearcher", text="NVIDIA's H200 is 2x faster than H100 for LLM inference. The $40k price tag is insane though. AMD MI300X at $20k is looking more attractive.", published_at="2026-03-11T13:00:00Z", url="https://reddit.com/fake039"), "topics": ["nvidia"]},
+    {"snippet": Snippet(id="snip_040", source="news", author="Financial Times", handle="@FT", text="Nvidia's market cap briefly overtook Apple's on Wednesday as AI chip demand surges. $NVDA up 8% this week.", published_at="2026-03-12T18:30:00Z", url="https://ft.com/fake040"), "topics": ["nvidia", "apple_inc"]},
+    {"snippet": Snippet(id="snip_041", source="twitter", author="@chipanalyst", handle="@chipanalyst", text="NVIDIA's CUDA moat is deeper than most people realize. 5M developers, 15 years of optimization, $10B in software tooling. AMD's ROCm has a long way to go.", published_at="2026-03-10T11:00:00Z", url="https://twitter.com/fake041"), "topics": ["nvidia"]},
+    {"snippet": Snippet(id="snip_042", source="linkedin", author="Ian Buck", handle="Ian Buck", text="NVIDIA DGX Cloud is now the fastest path to training frontier AI models. We're seeing 10x more enterprise customers this year vs last.", published_at="2026-03-09T10:00:00Z", url="https://linkedin.com/fake042"), "topics": ["nvidia"]},
+    {"snippet": Snippet(id="snip_043", source="news", author="Bloomberg", handle="@bloomberg", text="US export restrictions on NVIDIA AI chips to China tightened again. NVDA shares fall 3% on news but analysts say domestic demand offsets the loss.", published_at="2026-03-08T09:00:00Z", url="https://bloomberg.com/fake043"), "topics": ["nvidia"]},
+    {"snippet": Snippet(id="snip_044", source="reddit", author="u/gamer4k", handle="u/gamer4k", text="RTX 5090 review: absolute monster for 4K gaming. 120fps in everything. But $2,000 MSRP and impossible to find at retail. Same NVIDIA launch nonsense.", published_at="2026-03-07T20:00:00Z", url="https://reddit.com/fake044"), "topics": ["nvidia"]},
+    {"snippet": Snippet(id="snip_045", source="twitter", author="@datacenterweekly", handle="@datacenterweekly", text="Microsoft, Google, Meta, and Amazon combined are spending $300B on AI compute in 2026. NVIDIA captures ~70% of that. The numbers are staggering. $NVDA", published_at="2026-03-06T12:00:00Z", url="https://twitter.com/fake045"), "topics": ["nvidia", "tech_general"]},
+    # ── Microsoft ─────────────────────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_046", source="linkedin", author="Satya Nadella", handle="Satya Nadella", text="Microsoft Copilot now has 300M monthly active users across M365. AI is fundamentally changing how people work.", published_at="2026-03-10T11:00:00Z", url="https://linkedin.com/fake046"), "topics": ["microsoft"]},
+    {"snippet": Snippet(id="snip_047", source="reddit", author="u/enterprise_dev", handle="u/enterprise_dev", text="Azure OpenAI Service is genuinely good now. We migrated from OpenAI API and reliability is night and day. Plus the SLA actually matters.", published_at="2026-03-09T15:00:00Z", url="https://reddit.com/fake047"), "topics": ["microsoft"]},
+    {"snippet": Snippet(id="snip_048", source="news", author="TechCrunch", handle="@TechCrunch", text="Microsoft's GitHub Copilot Enterprise now has 1.8M paid seats. Developers report 35% productivity gains on average. Huge retention tool for enterprises.", published_at="2026-03-08T10:00:00Z", url="https://techcrunch.com/fake048"), "topics": ["microsoft"]},
+    {"snippet": Snippet(id="snip_049", source="twitter", author="@cloudwatch", handle="@cloudwatch", text="Azure's cloud revenue grew 29% YoY. Microsoft is gaining share vs AWS for the first time since 2018. OpenAI partnership is paying off. $MSFT", published_at="2026-03-07T14:00:00Z", url="https://twitter.com/fake049"), "topics": ["microsoft"]},
+    {"snippet": Snippet(id="snip_050", source="forum", author="ITAdmin", handle="ITAdmin", text="Windows 11 update broke our enterprise deployment again. Forced AI features that can't be disabled via group policy. Microsoft needs to sort this out.", published_at="2026-03-06T16:00:00Z", url="https://forum.fake050"), "topics": ["microsoft"]},
+    {"snippet": Snippet(id="snip_051", source="news", author="Reuters", handle="Reuters", text="Microsoft's Activision acquisition is delivering. Xbox Game Pass now has 50M subscribers, with Call of Duty driving the biggest growth spike.", published_at="2026-03-05T09:00:00Z", url="https://reuters.com/fake051"), "topics": ["microsoft"]},
+    {"snippet": Snippet(id="snip_052", source="reddit", author="u/officeuser", handle="u/officeuser", text="Microsoft Teams finally fixed the memory issue. Used to eat 4GB RAM. Now it's under 800MB. Only took 3 years but here we are.", published_at="2026-03-04T17:00:00Z", url="https://reddit.com/fake052"), "topics": ["microsoft"]},
+    # ── Google ────────────────────────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_053", source="twitter", author="Google", handle="@Google", text="Gemini 2.5 Ultra now available in Google AI Studio. 1M token context window, native multimodal, dramatically improved reasoning.", published_at="2026-03-12T15:00:00Z", url="https://twitter.com/fake053"), "topics": ["google"]},
+    {"snippet": Snippet(id="snip_054", source="news", author="The Guardian", handle="@guardian", text="Google faces new EU antitrust fine over search advertising dominance. Regulators allege preferential treatment of Google Shopping results.", published_at="2026-03-11T10:00:00Z", url="https://theguardian.com/fake054"), "topics": ["google"]},
+    {"snippet": Snippet(id="snip_055", source="reddit", author="u/searchmarketer", handle="u/searchmarketer", text="Google's AI Overviews are cannibalizing click-through rates across the board. Organic traffic down 30% for informational queries since the rollout.", published_at="2026-03-10T14:00:00Z", url="https://reddit.com/fake055"), "topics": ["google"]},
+    {"snippet": Snippet(id="snip_056", source="twitter", author="@androidpolice", handle="@androidpolice", text="Android 16 preview is out. Live translation is now completely on-device, even for video calls. Google's Tensor G5 chip makes this possible.", published_at="2026-03-09T11:00:00Z", url="https://twitter.com/fake056"), "topics": ["google"]},
+    {"snippet": Snippet(id="snip_057", source="linkedin", author="Sundar Pichai", handle="Sundar Pichai", text="Google Search handled 14 trillion queries last year. Adding AI capabilities to search at this scale is the most complex engineering challenge we've faced.", published_at="2026-03-08T10:00:00Z", url="https://linkedin.com/fake057"), "topics": ["google"]},
+    {"snippet": Snippet(id="snip_058", source="news", author="Bloomberg", handle="@bloomberg", text="Google's DeepMind unit achieves breakthrough in protein structure prediction 2.0. AlphaFold 3 can now model protein-drug interactions with 94% accuracy.", published_at="2026-03-07T09:00:00Z", url="https://bloomberg.com/fake058"), "topics": ["google"]},
+    {"snippet": Snippet(id="snip_059", source="forum", author="AdAgency", handle="AdAgency", text="Google Ads CPCs up 22% YoY on branded keywords. The auction is getting brutal. Performance Max campaigns are still a black box.", published_at="2026-03-06T15:00:00Z", url="https://forum.fake059"), "topics": ["google"]},
+    # ── OpenAI ────────────────────────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_060", source="twitter", author="Sam Altman", handle="@sama", text="GPT-5 is the biggest leap we've made. It's genuinely a different category of system. Rolling out to Plus users this week.", published_at="2026-03-12T12:00:00Z", url="https://twitter.com/fake060"), "topics": ["openai"]},
+    {"snippet": Snippet(id="snip_061", source="reddit", author="u/aiuser", handle="u/aiuser", text="OpenAI's pricing is getting ridiculous. $200/month for ChatGPT Pro? Anthropic Claude is way better value and better at coding tasks.", published_at="2026-03-10T20:00:00Z", url="https://reddit.com/fake061"), "topics": ["openai"]},
+    {"snippet": Snippet(id="snip_062", source="news", author="Bloomberg", handle="@bloomberg", text="OpenAI closes $10B funding round at $300B valuation. SoftBank leads as AI infrastructure spending accelerates.", published_at="2026-03-09T09:00:00Z", url="https://bloomberg.com/fake062"), "topics": ["openai"]},
+    {"snippet": Snippet(id="snip_063", source="twitter", author="@aiweekly", handle="@aiweekly", text="OpenAI's o3 model scored 87.5% on ARC-AGI benchmark. That's a genuine step change in reasoning ability. The rate of progress is accelerating.", published_at="2026-03-08T13:00:00Z", url="https://twitter.com/fake063"), "topics": ["openai"]},
+    {"snippet": Snippet(id="snip_064", source="forum", author="DevBuilder", handle="DevBuilder", text="OpenAI API rate limits are still a pain for production apps. Had 3 outages last month. We're seriously evaluating Anthropic and Gemini as fallbacks.", published_at="2026-03-07T17:00:00Z", url="https://forum.fake064"), "topics": ["openai"]},
+    {"snippet": Snippet(id="snip_065", source="news", author="Wired", handle="@WIRED", text="OpenAI's board drama played out publicly again. Two senior researchers departed citing disagreement over safety timelines. Culture tensions remain.", published_at="2026-03-06T10:00:00Z", url="https://wired.com/fake065"), "topics": ["openai"]},
+    # ── Elon Musk ─────────────────────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_066", source="twitter", author="Elon Musk", handle="@elonmusk", text="xAI's Grok 3 is now the most capable AI model on every benchmark. Open weights coming next month.", published_at="2026-03-12T20:00:00Z", url="https://twitter.com/fake066"), "topics": ["elon_musk", "tesla"]},
+    {"snippet": Snippet(id="snip_067", source="news", author="Wall Street Journal", handle="@WSJ", text="Elon Musk's political activities creating headwinds for Tesla's brand in Europe, according to new YouGov polling data.", published_at="2026-03-11T08:00:00Z", url="https://wsj.com/fake067"), "topics": ["elon_musk", "tesla"]},
+    {"snippet": Snippet(id="snip_068", source="reddit", author="u/spaceenthusiast", handle="u/spaceenthusiast", text="SpaceX Starship fully reusable launch confirmed. Musk says cost per kg to orbit is now $200. That's a 100x reduction from Falcon 9. Incredible.", published_at="2026-03-10T21:00:00Z", url="https://reddit.com/fake068"), "topics": ["elon_musk"]},
+    {"snippet": Snippet(id="snip_069", source="twitter", author="@politicalnews", handle="@politicalnews", text="Elon Musk's DOGE initiative claims $500B in federal savings identified. Critics argue methodology is flawed and savings are overstated.", published_at="2026-03-09T10:00:00Z", url="https://twitter.com/fake069"), "topics": ["elon_musk"]},
+    {"snippet": Snippet(id="snip_070", source="news", author="BBC News", handle="@BBCNews", text="Elon Musk's net worth surpasses $400B for first time, driven by Tesla recovery and SpaceX valuation increase. Richest person in history.", published_at="2026-03-08T11:00:00Z", url="https://bbc.com/fake070"), "topics": ["elon_musk", "tesla"]},
+    # ── Meta ──────────────────────────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_071", source="twitter", author="Mark Zuckerberg", handle="@zuck", text="Llama 4 is out. Best open-source model by a wide margin. 400B parameters, Apache 2.0 license. AI should be open and free for everyone.", published_at="2026-03-12T11:00:00Z", url="https://twitter.com/fake071"), "topics": ["meta"]},
+    {"snippet": Snippet(id="snip_072", source="news", author="TechCrunch", handle="@TechCrunch", text="Meta's Threads reaches 500M monthly active users. The Twitter/X competitor is growing faster than any social app Meta has ever launched.", published_at="2026-03-11T09:00:00Z", url="https://techcrunch.com/fake072"), "topics": ["meta"]},
+    {"snippet": Snippet(id="snip_073", source="reddit", author="u/adbuyer", handle="u/adbuyer", text="Meta's Advantage+ AI ad targeting is genuinely impressive now. We're seeing 40% better ROAS than manual targeting on Instagram. Hard to argue with results.", published_at="2026-03-10T13:00:00Z", url="https://reddit.com/fake073"), "topics": ["meta"]},
+    {"snippet": Snippet(id="snip_074", source="forum", author="VRDev", handle="VRDev", text="Meta Quest 4 is the first headset that makes me think VR will go mainstream. At $399 and sub-150g, the price/weight combination finally makes sense.", published_at="2026-03-09T16:00:00Z", url="https://forum.fake074"), "topics": ["meta"]},
+    {"snippet": Snippet(id="snip_075", source="news", author="The Verge", handle="@verge", text="Facebook turns 22 this week. User growth is flat in the US but Meta's overall family of apps now reaches 3.9B monthly active users globally.", published_at="2026-03-08T10:00:00Z", url="https://theverge.com/fake075"), "topics": ["meta"]},
+    # ── Anthropic / Claude ────────────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_076", source="twitter", author="Dario Amodei", handle="@DarioAmodei", text="Claude 4 Opus represents a step change in scientific reasoning and long-horizon tasks. We're seeing use cases we didn't anticipate.", published_at="2026-03-12T10:00:00Z", url="https://twitter.com/fake076"), "topics": ["anthropic"]},
+    {"snippet": Snippet(id="snip_077", source="reddit", author="u/claudeuser", handle="u/claudeuser", text="Claude is by far the best for long documents and nuanced analysis. GPT-5 is better at quick tasks but Claude wins on anything requiring deep reasoning.", published_at="2026-03-11T14:00:00Z", url="https://reddit.com/fake077"), "topics": ["anthropic"]},
+    {"snippet": Snippet(id="snip_078", source="news", author="Bloomberg", handle="@bloomberg", text="Anthropic raises $3B Series F at $40B valuation. Google and Amazon lead the round as the AI model race intensifies.", published_at="2026-03-10T09:00:00Z", url="https://bloomberg.com/fake078"), "topics": ["anthropic"]},
+    {"snippet": Snippet(id="snip_079", source="forum", author="EnterpriseAI", handle="EnterpriseAI", text="We evaluated Claude, GPT-5, and Gemini for our legal document analysis pipeline. Claude won on accuracy and was the only one to catch all the edge cases.", published_at="2026-03-09T15:00:00Z", url="https://forum.fake079"), "topics": ["anthropic"]},
+    # ── Crypto / Bitcoin ──────────────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_080", source="twitter", author="@cryptodaily", handle="@cryptodaily", text="Bitcoin just hit $120k for the first time. Institutional demand from ETF inflows is absorbing all selling pressure. #Bitcoin #BTC", published_at="2026-03-12T08:00:00Z", url="https://twitter.com/fake080"), "topics": ["bitcoin", "crypto"]},
+    {"snippet": Snippet(id="snip_081", source="reddit", author="u/hodler", handle="u/hodler", text="MicroStrategy now holds 450,000 BTC. Michael Saylor's bet is paying off spectacularly. Cost basis around $38k, current value is 3x.", published_at="2026-03-11T10:00:00Z", url="https://reddit.com/fake081"), "topics": ["bitcoin", "crypto"]},
+    {"snippet": Snippet(id="snip_082", source="news", author="CoinDesk", handle="@CoinDesk", text="BlackRock's Bitcoin ETF surpassed $80B AUM, making it the fastest-growing ETF in history. Traditional finance has fully embraced crypto.", published_at="2026-03-10T11:00:00Z", url="https://coindesk.com/fake082"), "topics": ["bitcoin", "crypto"]},
+    # ── General tech noise ────────────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_083", source="twitter", author="TechCrunch", handle="@TechCrunch", text="Big Tech earnings season kicks off next week. All eyes on cloud revenue growth and AI capex guidance.", published_at="2026-03-10T10:00:00Z", url="https://techcrunch.com/fake083"), "topics": ["tech_general"]},
+    {"snippet": Snippet(id="snip_084", source="reddit", author="u/marketwatcher", handle="u/marketwatcher", text="The Nasdaq is up 2.3% today driven by tech earnings optimism. Hard to not be bullish right now honestly.", published_at="2026-03-11T14:30:00Z", url="https://reddit.com/fake084"), "topics": ["tech_general", "noise"]},
+    {"snippet": Snippet(id="snip_085", source="news", author="The Economist", handle="@TheEconomist", text="The AI investment supercycle: $500B in data center capex planned for 2026. The question is whether the productivity gains will justify the spend.", published_at="2026-03-09T08:00:00Z", url="https://economist.com/fake085"), "topics": ["tech_general"]},
+    {"snippet": Snippet(id="snip_086", source="linkedin", author="Benedict Evans", handle="Benedict Evans", text="Every 'AI bubble' argument ignores that cloud, mobile, and broadband all looked like bubbles too. Infrastructure overbuild creates the platform for the next wave.", published_at="2026-03-08T09:00:00Z", url="https://linkedin.com/fake086"), "topics": ["tech_general"]},
+    # ── Netflix ───────────────────────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_087", source="twitter", author="@streamingwars", handle="@streamingwars", text="Netflix Q1: 320M subscribers, ad tier now 40% of new signups. Password sharing crackdown was the right call — revenue up 18% YoY. $NFLX", published_at="2026-03-12T16:00:00Z", url="https://twitter.com/fake087"), "topics": ["netflix"]},
+    {"snippet": Snippet(id="snip_088", source="reddit", author="u/tvaddict", handle="u/tvaddict", text="Netflix's AI-generated thumbnails are getting creepy personalized. Shows me different covers based on my watch history. Clever but slightly unsettling.", published_at="2026-03-11T19:00:00Z", url="https://reddit.com/fake088"), "topics": ["netflix"]},
+    {"snippet": Snippet(id="snip_089", source="news", author="Variety", handle="@Variety", text="Netflix wins 12 Oscars this year, more than any traditional studio. The streaming-to-awards pipeline is now fully established.", published_at="2026-03-10T20:00:00Z", url="https://variety.com/fake089"), "topics": ["netflix"]},
+    # ── Salesforce ────────────────────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_090", source="linkedin", author="Marc Benioff", handle="Marc Benioff", text="Salesforce AgentForce has deployed 50,000 AI agents for enterprise customers. The agentic AI era for business is here. #Salesforce #AI", published_at="2026-03-12T09:00:00Z", url="https://linkedin.com/fake090"), "topics": ["salesforce"]},
+    {"snippet": Snippet(id="snip_091", source="reddit", author="u/crmadmin", handle="u/crmadmin", text="Salesforce pricing is out of control. $300/user/month for Enterprise. We're evaluating HubSpot and Microsoft Dynamics as alternatives.", published_at="2026-03-10T14:00:00Z", url="https://reddit.com/fake091"), "topics": ["salesforce"]},
+    # ── Cybersecurity ─────────────────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_092", source="news", author="Krebs on Security", handle="@briankrebs", text="Major ransomware group takes down 3 hospital networks. FBI says the attack vector was an unpatched Citrix vulnerability from 2024.", published_at="2026-03-12T07:00:00Z", url="https://krebsonsecurity.com/fake092"), "topics": ["cybersecurity"]},
+    {"snippet": Snippet(id="snip_093", source="twitter", author="@threatintel", handle="@threatintel", text="New zero-day in Chrome exploited in the wild. Google pushed an emergency patch. Update your browser NOW. CVE-2026-1337 affects all versions below 130.", published_at="2026-03-11T06:00:00Z", url="https://twitter.com/fake093"), "topics": ["cybersecurity"]},
+    # ── Startup / VC ──────────────────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_094", source="twitter", author="Paul Graham", handle="@paulg", text="The best startups right now are the ones using AI to do things that were previously economically impossible, not just the same things cheaper.", published_at="2026-03-12T11:00:00Z", url="https://twitter.com/fake094"), "topics": ["startup_vc"]},
+    {"snippet": Snippet(id="snip_095", source="news", author="TechCrunch", handle="@TechCrunch", text="VC funding in AI startups hit $42B in Q1 2026, surpassing the entire total for 2023. Seed rounds are now averaging $5M with no revenue required.", published_at="2026-03-11T10:00:00Z", url="https://techcrunch.com/fake095"), "topics": ["startup_vc", "tech_general"]},
+    # ── Miscellaneous noise ───────────────────────────────────────────────────
+    {"snippet": Snippet(id="snip_096", source="instagram", author="TechMemes", handle="@techmemes", text="Me explaining to my parents why I need a $4,000 GPU for 'work' 😅 #tech #nvidia #meme #gaming", published_at="2026-03-10T21:00:00Z", url="https://instagram.com/fake096"), "topics": ["noise", "nvidia"]},
+    {"snippet": Snippet(id="snip_097", source="twitter", author="@jobpostings", handle="@jobpostings", text="Apple is hiring 500 AI engineers in Seattle. $300k+ total comp. Roles span Siri, on-device ML, and Vision Pro. #hiring #jobs #apple", published_at="2026-03-09T09:00:00Z", url="https://twitter.com/fake097"), "topics": ["apple_inc", "noise"]},
+    {"snippet": Snippet(id="snip_098", source="reddit", author="u/conspiracy_guy", handle="u/conspiracy_guy", text="Amazon is literally listening to your conversations 24/7 through Alexa. My friend mentioned needing shoes and got shoe ads on Facebook 10 minutes later.", published_at="2026-03-08T23:00:00Z", url="https://reddit.com/fake098"), "topics": ["amazon_inc", "noise"]},
+    {"snippet": Snippet(id="snip_099", source="forum", author="DealHunter", handle="DealHunter", text="🔥 Amazon Prime Day deal: 50% off Kindle Unlimited for 3 months! Use code KINDLE50 at checkout. Limited time! #amazon #deals #primeday", published_at="2026-03-07T12:00:00Z", url="https://forum.fake099"), "topics": ["amazon_inc", "noise"]},
+    {"snippet": Snippet(id="snip_100", source="twitter", author="@affiliateking", handle="@affiliateking", text="HUGE Apple sale at Best Buy! AirPods Pro 2 for $179 (was $249). MacBook Air M3 $899. Get them before they're gone! #apple #deals #ad", published_at="2026-03-06T10:00:00Z", url="https://twitter.com/fake100"), "topics": ["apple_inc", "noise"]},
+    {"snippet": Snippet(id="snip_101", source="news", author="CNBC", handle="@CNBC", text="Tesla stock surges 12% after surprise delivery beat. 520,000 vehicles delivered in Q1, well above the 480,000 analyst consensus estimate.", published_at="2026-03-05T15:00:00Z", url="https://cnbc.com/fake101"), "topics": ["tesla"]},
+    {"snippet": Snippet(id="snip_102", source="reddit", author="u/cloudarchitect", handle="u/cloudarchitect", text="AWS re:Invent announcements: 47 new services, most AI-related. Amazon Bedrock is genuinely good now — multi-model routing is a killer feature.", published_at="2026-03-04T13:00:00Z", url="https://reddit.com/fake102"), "topics": ["amazon_inc"]},
+    {"snippet": Snippet(id="snip_103", source="twitter", author="@nvidiastock", handle="@nvidiastock", text="NVIDIA revenue guidance raised again: $44B next quarter. Bears have been wrong for 8 consecutive quarters. $NVDA is the defining company of this decade.", published_at="2026-03-03T16:00:00Z", url="https://twitter.com/fake103"), "topics": ["nvidia"]},
+    {"snippet": Snippet(id="snip_104", source="news", author="Axios", handle="@axios", text="Microsoft's LinkedIn reaches 1.2B members. B2B advertising on the platform up 35% as companies shift budgets from Facebook to professional audiences.", published_at="2026-03-02T10:00:00Z", url="https://axios.com/fake104"), "topics": ["microsoft"]},
+    {"snippet": Snippet(id="snip_105", source="reddit", author="u/privacy_advocate", handle="u/privacy_advocate", text="Google's new ad targeting system bypasses third-party cookie deprecation entirely using on-device fingerprinting. Privacy Sandbox was a distraction.", published_at="2026-03-01T14:00:00Z", url="https://reddit.com/fake105"), "topics": ["google"]},
 ]
 
 
-def get_snippets_for_query(entity_name: str, count: int = 10) -> list[Snippet]:
-    """
-    Return mock snippets relevant to the entity name.
-    Includes some noise snippets to make scoring interesting.
-    """
+def get_snippets_for_query(entity_name: str, count: int = 15) -> list[Snippet]:
+    """Return mock snippets relevant to the entity name, including some noise."""
     name_lower = entity_name.lower()
 
-    # Map entity names to topic tags
     topic_map = {
         "apple": ["apple_inc", "apple_fruit", "tech_general"],
         "amazon": ["amazon_inc", "amazon_rainforest", "tech_general"],
@@ -273,17 +140,24 @@ def get_snippets_for_query(entity_name: str, count: int = 10) -> list[Snippet]:
         "microsoft": ["microsoft", "tech_general"],
         "google": ["google", "tech_general"],
         "openai": ["openai", "tech_general"],
+        "anthropic": ["anthropic", "tech_general"],
+        "claude": ["anthropic", "tech_general"],
+        "meta": ["meta", "tech_general"],
+        "facebook": ["meta", "tech_general"],
         "elon": ["elon_musk", "tesla"],
         "musk": ["elon_musk", "tesla"],
+        "bitcoin": ["bitcoin", "crypto"],
+        "crypto": ["crypto", "bitcoin"],
+        "netflix": ["netflix", "tech_general"],
+        "salesforce": ["salesforce", "tech_general"],
     }
 
-    relevant_topics = set()
+    relevant_topics: set[str] = set()
     for key, topics in topic_map.items():
         if key in name_lower:
             relevant_topics.update(topics)
 
     if not relevant_topics:
-        # fallback: return tech general + a few random ones
         relevant_topics = {"tech_general"}
 
     matching = [
@@ -294,14 +168,14 @@ def get_snippets_for_query(entity_name: str, count: int = 10) -> list[Snippet]:
     return matching[:count]
 
 
-def get_filtered_snippets(entity_name: str, smart_prompt: str, count: int = 10) -> list[Snippet]:
-    """
-    Return snippets filtered by the smart prompt (mock: exclude obvious noise topics).
-    """
-    all_snippets = get_snippets_for_query(entity_name, count=20)
-    noise_keywords = ["fruit", "orchard", "pie", "recipe", "rainforest",
-                      "deforestation", "river", "farming", "harvest"]
-
+def get_filtered_snippets(entity_name: str, smart_prompt: str, count: int = 15) -> list[Snippet]:
+    """Return snippets with noise filtered out via keyword heuristic."""
+    all_snippets = get_snippets_for_query(entity_name, count=30)
+    noise_keywords = [
+        "fruit", "orchard", "pie", "recipe", "rainforest", "deforestation",
+        "river", "farming", "harvest", "#deals", "#ad", "#affiliate",
+        "promo", "discount", "sale", "coupon", "conspiracy",
+    ]
     filtered = [
         s for s in all_snippets
         if not any(kw in s.text.lower() for kw in noise_keywords)
