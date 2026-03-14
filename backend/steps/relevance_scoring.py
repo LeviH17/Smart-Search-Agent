@@ -1,27 +1,30 @@
 import json
-import asyncio
 import anthropic
 from models import Snippet, ScoringResult, EntityResult
-from prompts import RELEVANCE_SCORING_SYSTEM, RELEVANCE_SCORING_USER
+from prompts import RELEVANCE_SCORING_SYSTEM, RELEVANCE_SCORING_BATCH_USER
 
 THRESHOLD = 0.80
-BATCH_SIZE = 20  # max concurrent Haiku calls per batch
 
 
-async def _score_snippet(snippet: Snippet, intent: str, entity: EntityResult,
-                          client: anthropic.AsyncAnthropic) -> Snippet:
-    user_content = RELEVANCE_SCORING_USER.format(
+async def run(snippets: list[Snippet], entity: EntityResult, intent: str,
+              iteration: int, client: anthropic.AsyncAnthropic) -> ScoringResult:
+    # Build a compact representation for each snippet
+    snippets_json = json.dumps([
+        {"id": s.id, "source": s.source, "author": s.author, "text": s.text}
+        for s in snippets
+    ], indent=2)
+
+    user_content = RELEVANCE_SCORING_BATCH_USER.format(
         intent=intent,
         entity_name=entity.entityName,
         entity_type=entity.entityType,
-        source=snippet.source,
-        author=snippet.author,
-        text=snippet.text
+        count=len(snippets),
+        snippets_json=snippets_json,
     )
 
     response = await client.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens=256,
+        max_tokens=8192,
         system=RELEVANCE_SCORING_SYSTEM,
         messages=[{"role": "user", "content": user_content}]
     )
@@ -33,23 +36,19 @@ async def _score_snippet(snippet: Snippet, intent: str, entity: EntityResult,
             raw = raw[4:]
     raw = raw.strip()
 
-    data = json.loads(raw)
-    return snippet.model_copy(update={
-        "relevance_score": float(data.get("score", 0.0)),
-        "relevance_label": data.get("label", "Irrelevant"),
-        "relevance_reason": data.get("reason", "")
-    })
+    results = json.loads(raw)
 
+    # Build lookup from id → result
+    result_map = {r["id"]: r for r in results}
 
-async def run(snippets: list[Snippet], entity: EntityResult, intent: str,
-              iteration: int, client: anthropic.AsyncAnthropic) -> ScoringResult:
-    # Score in batches to avoid rate limits
     scored_snippets: list[Snippet] = []
-    for i in range(0, len(snippets), BATCH_SIZE):
-        batch = snippets[i:i + BATCH_SIZE]
-        tasks = [_score_snippet(s, intent, entity, client) for s in batch]
-        results = await asyncio.gather(*tasks)
-        scored_snippets.extend(results)
+    for s in snippets:
+        r = result_map.get(s.id, {})
+        scored_snippets.append(s.model_copy(update={
+            "relevance_score": float(r.get("score", 0.0)),
+            "relevance_label": r.get("label", "Irrelevant"),
+            "relevance_reason": r.get("reason", ""),
+        }))
 
     relevant_count = sum(
         1 for s in scored_snippets

@@ -151,18 +151,34 @@ Craft an OpenSearch boolean query. Return JSON only."""
 RELEVANCE_SCORING_SYSTEM = """You are scoring social media snippets for relevance to a search intent.
 Be precise and critical — only mark content as Relevant if it clearly matches the user's intent.
 
-Return ONLY valid JSON:
-{
-  "score": 0.0,
-  "label": "Relevant" | "Somewhat Relevant" | "Irrelevant",
-  "reason": "one sentence explanation"
-}
+You will receive a list of snippets and must return a JSON array — one entry per snippet, in the same order.
+
+Return ONLY a valid JSON array:
+[
+  {
+    "id": "snip_001",
+    "score": 0.0,
+    "label": "Relevant" | "Somewhat Relevant" | "Irrelevant",
+    "reason": "one sentence explanation"
+  },
+  ...
+]
 
 Scoring guide:
 - Relevant (0.8–1.0): Directly about the target entity/topic, clearly matches intent
 - Somewhat Relevant (0.4–0.79): Tangentially related, mentions entity but not the main focus
 - Irrelevant (0.0–0.39): About something else that shares a name/keyword, or spam/noise
 """
+
+RELEVANCE_SCORING_BATCH_USER = """Search intent: "{intent}"
+Entity: "{entity_name}" ({entity_type})
+
+Score each of the following {count} snippets for relevance. Return a JSON array with one entry per snippet in the same order.
+
+Snippets:
+{snippets_json}
+
+Return JSON array only."""
 
 RELEVANCE_SCORING_USER = """Search intent: "{intent}"
 Entity being tracked: "{entity_name}" ({entity_type})
