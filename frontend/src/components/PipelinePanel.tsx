@@ -1,7 +1,13 @@
 import type { PipelineState } from "../types";
 import { StepCard } from "./StepCard";
 
-export function PipelinePanel({ pipeline }: { pipeline: PipelineState }) {
+interface Props {
+  pipeline: PipelineState;
+  awaitingBoolean: boolean;
+  onBooleanConfirm: (query: string) => void;
+}
+
+export function PipelinePanel({ pipeline, awaitingBoolean, onBooleanConfirm }: Props) {
   const { steps, status, pipelineDone } = pipeline;
 
   if (status === "idle") {
@@ -34,6 +40,12 @@ export function PipelinePanel({ pipeline }: { pipeline: PipelineState }) {
             Running
           </span>
         )}
+        {status === "awaiting_boolean" && (
+          <span className="flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            Review boolean query
+          </span>
+        )}
         {status === "done" && (
           <span className="text-xs text-green-700 bg-green-50 px-2.5 py-1 rounded-full">
             ✓ Complete · {Math.round((pipelineDone?.final_precision ?? 0) * 100)}% precision
@@ -50,9 +62,17 @@ export function PipelinePanel({ pipeline }: { pipeline: PipelineState }) {
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
         {steps
           .filter((s) => s.result?.resultType !== "intent_check")
-          .map((step) => (
-            <StepCard key={step.stepId} step={step} />
-          ))}
+          .map((step) => {
+            const isBooleanStep = step.result?.resultType === "boolean" && step.iteration === 0;
+            return (
+              <StepCard
+                key={step.stepId}
+                step={step}
+                awaitingBooleanConfirm={isBooleanStep && awaitingBoolean}
+                onBooleanConfirm={isBooleanStep ? onBooleanConfirm : undefined}
+              />
+            );
+          })}
       </div>
     </div>
   );

@@ -40,11 +40,22 @@ function ElapsedBadge({ startedAt, completedAt }: { startedAt: number | null; co
   return <span className="text-xs text-gray-300 ml-auto">{label}</span>;
 }
 
-function renderResult(result: StepResultData) {
+interface RenderOptions {
+  awaitingBooleanConfirm?: boolean;
+  onBooleanConfirm?: (query: string) => void;
+}
+
+function renderResult(result: StepResultData, opts: RenderOptions = {}) {
   switch (result.resultType) {
     case "intent_check": return null;
     case "entity": return <EntityStep data={result.data} />;
-    case "boolean": return <BooleanStep data={result.data} />;
+    case "boolean": return (
+      <BooleanStep
+        data={result.data}
+        awaitingConfirm={opts.awaitingBooleanConfirm}
+        onConfirm={opts.onBooleanConfirm}
+      />
+    );
     case "snippets": return <SnippetStep data={result.data} />;
     case "scoring": return <ScoringStep data={result.data} />;
     case "smart_prompt": return <SmartPromptStep data={result.data} />;
@@ -52,7 +63,13 @@ function renderResult(result: StepResultData) {
   }
 }
 
-export function StepCard({ step }: { step: StepState }) {
+interface StepCardProps {
+  step: StepState;
+  awaitingBooleanConfirm?: boolean;
+  onBooleanConfirm?: (query: string) => void;
+}
+
+export function StepCard({ step, awaitingBooleanConfirm, onBooleanConfirm }: StepCardProps) {
   const iterLabel = step.iteration > 0 ? ` · Round ${step.iteration + 1}` : "";
 
   return (
@@ -72,9 +89,9 @@ export function StepCard({ step }: { step: StepState }) {
       </div>
 
       {/* Body */}
-      {step.result && step.status === "done" && (
+      {step.result && (step.status === "done" || awaitingBooleanConfirm) && (
         <div className="px-4 py-4">
-          {renderResult(step.result)}
+          {renderResult(step.result, { awaitingBooleanConfirm, onBooleanConfirm })}
         </div>
       )}
     </div>

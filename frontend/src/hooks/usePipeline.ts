@@ -5,6 +5,8 @@ import type {
   StepState,
   ChatMessage,
   StepResultData,
+  EntityResult,
+  BooleanQueryResult,
 } from "../types";
 
 function makeId() {
@@ -23,6 +25,9 @@ export function usePipeline() {
   const [isLoading, setIsLoading] = useState(false);
   const historyRef = useRef<{ role: string; content: string }[]>([]);
   const abortRef = useRef<AbortController | null>(null);
+  const pendingEntityRef = useRef<EntityResult | null>(null);
+  const pendingBooleanRef = useRef<BooleanQueryResult | null>(null);
+  const originalQueryRef = useRef<string>("");
 
   const addMessage = useCallback((role: ChatMessage["role"], content: string, suggestions?: string[]) => {
     const msg: ChatMessage = { id: makeId(), role, content, suggestions, timestamp: Date.now() };
@@ -111,6 +116,14 @@ export function usePipeline() {
         break;
       }
 
+      case "boolean_confirm_needed": {
+        pendingEntityRef.current = payload.entity as EntityResult;
+        pendingBooleanRef.current = payload.boolean as BooleanQueryResult;
+        setPipeline((prev) => ({ ...prev, status: "awaiting_boolean" as PipelineStatus }));
+        setIsLoading(false);
+        break;
+      }
+
       case "pipeline_done": {
         const success = payload.success as boolean;
         const iterations_used = payload.iterations_used as number;
@@ -126,25 +139,9 @@ export function usePipeline() {
     }
   }, [upsertStep, addMessage]);
 
-  const runPipeline = useCallback(async (userMessage: string) => {
-    // Append to history
-    historyRef.current = [
-      ...historyRef.current,
-      { role: "user", content: userMessage },
-    ];
-
-    addMessage("user", userMessage);
-    setIsLoading(true);
-    setPipeline((prev) => ({ ...prev, status: "running", steps: prev.status === "idle" ? [] : prev.steps, pipelineDone: null }));
-
-    // Cancel any existing stream
+  const _fireRequest = useCallback(async (body: string) => {
     abortRef.current?.abort();
     abortRef.current = new AbortController();
-
-    const body = JSON.stringify({
-      query: userMessage,
-      conversation_history: historyRef.current.slice(0, -1), // exclude last (current)
-    });
 
     let buffer = "";
     let currentEvent = "message";
@@ -184,7 +181,45 @@ export function usePipeline() {
         setPipeline((prev) => ({ ...prev, status: "error" }));
       }
     }
-  }, [addMessage, processSSELine]);
+  }, [processSSELine]);
+
+  const runPipeline = useCallback(async (userMessage: string) => {
+    historyRef.current = [
+      ...historyRef.current,
+      { role: "user", content: userMessage },
+    ];
+    originalQueryRef.current = userMessage;
+
+    addMessage("user", userMessage);
+    setIsLoading(true);
+    setPipeline((prev) => ({
+      ...prev,
+      status: "running",
+      steps: prev.status === "idle" ? [] : prev.steps,
+      pipelineDone: null,
+    }));
+
+    await _fireRequest(JSON.stringify({
+      query: userMessage,
+      conversation_history: historyRef.current.slice(0, -1),
+    }));
+  }, [addMessage, _fireRequest]);
+
+  const confirmBoolean = useCallback(async (editedQuery: string) => {
+    if (!pendingEntityRef.current || !pendingBooleanRef.current) return;
+
+    const booleanOverride = { ...pendingBooleanRef.current, query: editedQuery };
+
+    setIsLoading(true);
+    setPipeline((prev) => ({ ...prev, status: "running" }));
+
+    await _fireRequest(JSON.stringify({
+      query: originalQueryRef.current,
+      conversation_history: historyRef.current,
+      entity_override: pendingEntityRef.current,
+      boolean_override: booleanOverride,
+    }));
+  }, [_fireRequest]);
 
   const sendMessage = useCallback((text: string) => {
     runPipeline(text);
@@ -193,10 +228,15 @@ export function usePipeline() {
   const reset = useCallback(() => {
     abortRef.current?.abort();
     historyRef.current = [];
+    pendingEntityRef.current = null;
+    pendingBooleanRef.current = null;
+    originalQueryRef.current = "";
     setPipeline(INITIAL_PIPELINE);
     setMessages([]);
     setIsLoading(false);
   }, []);
 
-  return { pipeline, messages, isLoading, sendMessage, reset };
+  const awaitingBoolean = pipeline.status === "awaiting_boolean";
+
+  return { pipeline, messages, isLoading, sendMessage, confirmBoolean, awaitingBoolean, reset };
 }

@@ -33,67 +33,81 @@ async def run_pipeline(
     """
     client = anthropic.AsyncAnthropic()
 
-    # ── Step 0: Clarification check ──────────────────────────────────────────
-    await emit("step_start", "intent_check", {
-        "label": "Checking intent clarity",
-        "description": "Evaluating whether the query has enough context to build a targeted search."
-    }, 0)
+    # ── Phase 2: boolean override provided — skip setup steps ─────────────────
+    if request.entity_override and request.boolean_override:
+        from models import EntityResult, BooleanQueryResult as BQR
+        entity = EntityResult(**request.entity_override)
+        boolean = BQR(**request.boolean_override)
 
-    try:
-        needs_clarification, question, suggestions = await clarification.check(request, client)
-    except Exception as e:
-        await emit("step_error", "intent_check", {"message": str(e), "recoverable": False}, 0)
-        return
+    else:
+        # ── Step 0: Clarification check ──────────────────────────────────────
+        await emit("step_start", "intent_check", {
+            "label": "Checking intent clarity",
+            "description": "Evaluating whether the query has enough context to build a targeted search."
+        }, 0)
 
-    if needs_clarification:
+        try:
+            needs_clarification, question, suggestions = await clarification.check(request, client)
+        except Exception as e:
+            await emit("step_error", "intent_check", {"message": str(e), "recoverable": False}, 0)
+            return
+
+        if needs_clarification:
+            await emit("step_complete", "intent_check", {
+                "result_type": "intent_check",
+                "data": {"sufficient": False}
+            }, 0)
+            await emit("clarification_needed", "intent_check", {
+                "message": question,
+                "suggestions": suggestions
+            }, 0)
+            return
+
         await emit("step_complete", "intent_check", {
             "result_type": "intent_check",
-            "data": {"sufficient": False}
+            "data": {"sufficient": True}
         }, 0)
-        await emit("clarification_needed", "intent_check", {
-            "message": question,
-            "suggestions": suggestions
+
+        # ── Step 1: Entity extraction ─────────────────────────────────────────
+        await emit("step_start", "entity_extraction", {
+            "label": "Analyzing intent & extracting entities",
+            "description": "Identifying the entity, its aliases, ambiguity signals, and known noise types."
+        }, 0)
+
+        try:
+            entity = await entity_extraction.run(request, client)
+        except Exception as e:
+            await emit("step_error", "entity_extraction", {"message": str(e), "recoverable": False}, 0)
+            return
+
+        await emit("step_complete", "entity_extraction", {
+            "result_type": "entity",
+            "data": entity.model_dump()
+        }, 0)
+
+        # ── Step 2: Boolean query ─────────────────────────────────────────────
+        await emit("step_start", "boolean_query", {
+            "label": "Crafting boolean query",
+            "description": "Building an OpenSearch boolean query from entity signals and aliases."
+        }, 0)
+
+        try:
+            boolean = await boolean_query.run(entity, request.query, client)
+        except Exception as e:
+            await emit("step_error", "boolean_query", {"message": str(e), "recoverable": False}, 0)
+            return
+
+        await emit("step_complete", "boolean_query", {
+            "result_type": "boolean",
+            "data": boolean.model_dump()
+        }, 0)
+
+        # ── Pause: ask frontend to confirm/edit the boolean ───────────────────
+        await emit("boolean_confirm_needed", "boolean_query", {
+            "entity": entity.model_dump(),
+            "boolean": boolean.model_dump(),
         }, 0)
         return
-
-    await emit("step_complete", "intent_check", {
-        "result_type": "intent_check",
-        "data": {"sufficient": True}
-    }, 0)
-
-    # ── Step 1: Entity extraction ─────────────────────────────────────────────
-    await emit("step_start", "entity_extraction", {
-        "label": "Analyzing intent & extracting entities",
-        "description": "Identifying the entity, its aliases, ambiguity signals, and known noise types."
-    }, 0)
-
-    try:
-        entity = await entity_extraction.run(request, client)
-    except Exception as e:
-        await emit("step_error", "entity_extraction", {"message": str(e), "recoverable": False}, 0)
-        return
-
-    await emit("step_complete", "entity_extraction", {
-        "result_type": "entity",
-        "data": entity.model_dump()
-    }, 0)
-
-    # ── Step 2: Boolean query ─────────────────────────────────────────────────
-    await emit("step_start", "boolean_query", {
-        "label": "Crafting boolean query",
-        "description": "Building an OpenSearch boolean query from entity signals and aliases."
-    }, 0)
-
-    try:
-        boolean = await boolean_query.run(entity, request.query, client)
-    except Exception as e:
-        await emit("step_error", "boolean_query", {"message": str(e), "recoverable": False}, 0)
-        return
-
-    await emit("step_complete", "boolean_query", {
-        "result_type": "boolean",
-        "data": boolean.model_dump()
-    }, 0)
 
     # ── Step 3: Fetch snippets ────────────────────────────────────────────────
     await emit("step_start", "snippet_fetch", {

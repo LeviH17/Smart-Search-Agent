@@ -65,3 +65,5 @@ class CreateSearchResult(BaseModel):
 class PipelineRequest(BaseModel):
     query: str
     conversation_history: list[dict] = []
+    entity_override: Optional[dict] = None
+    boolean_override: Optional[dict] = None

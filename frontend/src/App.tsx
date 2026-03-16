@@ -3,7 +3,7 @@ import { ChatPanel } from "./components/ChatPanel";
 import { PipelinePanel } from "./components/PipelinePanel";
 
 export default function App() {
-  const { pipeline, messages, isLoading, sendMessage, reset } = usePipeline();
+  const { pipeline, messages, isLoading, sendMessage, confirmBoolean, awaitingBoolean, reset } = usePipeline();
 
   return (
     <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
@@ -26,7 +26,7 @@ export default function App() {
           <span className="text-xs text-gray-400">Real-time pipeline execution</span>
         </div>
 
-        <PipelinePanel pipeline={pipeline} />
+        <PipelinePanel pipeline={pipeline} awaitingBoolean={awaitingBoolean} onBooleanConfirm={confirmBoolean} />
       </div>
     </div>
   );
