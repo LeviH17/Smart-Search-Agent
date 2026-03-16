@@ -20,7 +20,12 @@ def _parse_snippets(raw: str) -> list[Snippet]:
         raw = re.sub(r"\n?```$", "", raw)
     raw = raw.strip()
 
-    data = json.loads(raw)
+    # Extract just the JSON array in case the model appended trailing text
+    start = raw.find("[")
+    end = raw.rfind("]") + 1
+    if start == -1 or end == 0:
+        raise ValueError("No JSON array found in snippet generation response")
+    data = json.loads(raw[start:end])
     snippets = []
     for i, item in enumerate(data):
         # Ensure unique IDs
