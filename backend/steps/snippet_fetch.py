@@ -12,6 +12,33 @@ NOISE_RATIO = 0.40
 VALID_SOURCES = {"twitter", "reddit", "linkedin", "news", "instagram", "forum"}
 
 
+def _sanitize_json(raw: str) -> str:
+    """Replace literal newlines/tabs inside JSON strings with spaces.
+
+    The model sometimes writes actual newline characters inside string values,
+    which makes the JSON unparseable. We walk character-by-character, detect
+    when we're inside a quoted string, and replace control chars with a space.
+    """
+    result = []
+    in_string = False
+    escaped = False
+    for ch in raw:
+        if escaped:
+            result.append(ch)
+            escaped = False
+        elif ch == "\\" and in_string:
+            result.append(ch)
+            escaped = True
+        elif ch == '"':
+            in_string = not in_string
+            result.append(ch)
+        elif in_string and ch in "\n\r\t":
+            result.append(" ")
+        else:
+            result.append(ch)
+    return "".join(result)
+
+
 def _parse_snippets(raw: str, id_offset: int = 0) -> list[Snippet]:
     raw = raw.strip()
     if raw.startswith("```"):
@@ -24,7 +51,7 @@ def _parse_snippets(raw: str, id_offset: int = 0) -> list[Snippet]:
     if start == -1 or end == 0:
         raise ValueError("No JSON array found in snippet generation response")
 
-    data = json.loads(raw[start:end])
+    data = json.loads(_sanitize_json(raw[start:end]))
     snippets = []
     for i, item in enumerate(data):
         item["id"] = f"snip_{id_offset + i + 1:03d}"
