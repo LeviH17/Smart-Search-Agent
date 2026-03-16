@@ -23,7 +23,7 @@ Mix of content types:
 - Noise snippets that share a keyword but are off-topic (based on knownNoiseTypes)
 - Spam / promotional content (realistic noise)
 
-About 75% of snippets should be genuinely relevant, 25% should be realistic noise.
+About 70% of snippets should be genuinely relevant, 30% should be realistic noise.
 Use varied dates across the last 2 weeks. Use realistic author names and handles.
 """
 
