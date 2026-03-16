@@ -15,15 +15,23 @@ Return ONLY a valid JSON array of snippet objects. Each object must match exactl
   "relevance_reason": null
 }
 
-Mix of content types:
-- Customer reviews and experiences (positive and negative)
-- News articles and press coverage
-- Analyst commentary and investor takes
-- Industry discussion and comparisons
-- Noise snippets that share a keyword but are off-topic (based on knownNoiseTypes)
-- Spam / promotional content (realistic noise)
+CRITICAL NOISE REQUIREMENT — you MUST hit exactly 40% noise snippets (40 out of every 100).
+Do NOT default to mostly-relevant results. Count your noise snippets as you go.
 
-About 70% of snippets should be genuinely relevant, 30% should be realistic noise.
+Noise snippets must be SUBTLE and REALISTIC — they share a keyword or brand name but are clearly off-topic:
+- A different company or person with the same name
+- A product or place that shares a term (e.g. "booking" for a music gig, "apple" for the fruit)
+- Tangentially related industry chatter that doesn't mention the entity at all
+- Spam or promotional posts that keyword-stuff the entity name without discussing it
+- Geographic or slang uses of the keyword (e.g. "booking" as slang, "amazon" as the river)
+- Job postings, events, or unrelated news that happens to mention the name
+
+Relevant snippets (60%) should cover:
+- Customer reviews and experiences (positive and negative)
+- News articles and press coverage about the entity
+- Analyst commentary and investor takes
+- Industry discussion directly about the entity
+
 Use varied dates across the last 2 weeks. Use realistic author names and handles.
 """
 
@@ -33,9 +41,11 @@ Entity: {entity_name} ({full_name})
 Type: {entity_type}
 Industry: {industry}
 Handles: {handles}
-Known noise types (use these to generate realistic off-topic snippets): {noise_types}
-Ambiguity reasons: {ambiguity_reasons}
+Known noise types — generate realistic off-topic snippets using THESE specific categories: {noise_types}
+Ambiguity reasons (exploit these to create convincing noise): {ambiguity_reasons}
 Boolean query used: {boolean_query}
+
+MANDATORY: exactly {noise_count} of the {count} snippets must be noise (off-topic). Generate the noise snippets FIRST, then fill the rest with relevant content. Do not skip this requirement.
 
 Return a JSON array of {count} snippet objects. No other text."""
 

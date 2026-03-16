@@ -5,6 +5,7 @@ from models import BooleanQueryResult, Snippet, EntityResult
 from prompts import SNIPPET_GENERATION_SYSTEM, SNIPPET_GENERATION_USER, SNIPPET_GENERATION_FILTERED_USER
 
 SNIPPET_COUNT = 100
+NOISE_RATIO = 0.40  # 40% noise in initial fetch
 
 
 def _parse_snippets(raw: str) -> list[Snippet]:
@@ -32,8 +33,10 @@ def _parse_snippets(raw: str) -> list[Snippet]:
 async def run(boolean: BooleanQueryResult, entity: EntityResult,
               client: anthropic.AsyncAnthropic) -> list[Snippet]:
     """Generate mock snippets via Claude based on the entity and boolean query."""
+    noise_count = int(SNIPPET_COUNT * NOISE_RATIO)
     user_content = SNIPPET_GENERATION_USER.format(
         count=SNIPPET_COUNT,
+        noise_count=noise_count,
         entity_name=entity.entityName,
         full_name=entity.fullName,
         entity_type=entity.entityType,
