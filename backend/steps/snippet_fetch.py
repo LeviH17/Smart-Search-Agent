@@ -6,14 +6,13 @@ from models import BooleanQueryResult, Snippet, EntityResult
 from prompts import SNIPPET_GENERATION_SYSTEM, SNIPPET_GENERATION_USER, SNIPPET_GENERATION_FILTERED_USER
 
 SNIPPET_COUNT = 100
-BATCH_SIZE = 50        # Each batch fits safely within 16k output tokens
-NOISE_RATIO = 0.40     # 40% noise in initial fetch
+BATCH_SIZE = 20        # 20 snippets × ~150 tokens ≈ 3k tokens — well within 4096
+NOISE_RATIO = 0.40
 
 VALID_SOURCES = {"twitter", "reddit", "linkedin", "news", "instagram", "forum"}
 
 
 def _parse_snippets(raw: str, id_offset: int = 0) -> list[Snippet]:
-    """Extract JSON array from Claude response and parse into Snippet objects."""
     raw = raw.strip()
     if raw.startswith("```"):
         raw = re.sub(r"^```[a-z]*\n?", "", raw)
@@ -24,8 +23,8 @@ def _parse_snippets(raw: str, id_offset: int = 0) -> list[Snippet]:
     end = raw.rfind("]") + 1
     if start == -1 or end == 0:
         raise ValueError("No JSON array found in snippet generation response")
-    data = json.loads(raw[start:end])
 
+    data = json.loads(raw[start:end])
     snippets = []
     for i, item in enumerate(data):
         item["id"] = f"snip_{id_offset + i + 1:03d}"
@@ -42,7 +41,7 @@ async def _fetch_batch(user_content: str, id_offset: int,
                        client: anthropic.AsyncAnthropic) -> list[Snippet]:
     response = await client.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens=8192,
+        max_tokens=4096,
         system=SNIPPET_GENERATION_SYSTEM,
         messages=[{"role": "user", "content": user_content}]
     )
@@ -51,10 +50,11 @@ async def _fetch_batch(user_content: str, id_offset: int,
 
 async def run(boolean: BooleanQueryResult, entity: EntityResult,
               client: anthropic.AsyncAnthropic) -> list[Snippet]:
-    """Generate mock snippets in two concurrent batches of 50."""
-    noise_per_batch = int(BATCH_SIZE * NOISE_RATIO)
+    """Generate 100 snippets across 5 concurrent batches of 20."""
+    noise_per_batch = max(1, int(BATCH_SIZE * NOISE_RATIO))
+    num_batches = SNIPPET_COUNT // BATCH_SIZE
 
-    def make_prompt(batch_num: int) -> str:
+    def make_prompt() -> str:
         return SNIPPET_GENERATION_USER.format(
             count=BATCH_SIZE,
             noise_count=noise_per_batch,
@@ -68,16 +68,18 @@ async def run(boolean: BooleanQueryResult, entity: EntityResult,
             boolean_query=boolean.query,
         )
 
-    batch1, batch2 = await asyncio.gather(
-        _fetch_batch(make_prompt(1), id_offset=0, client=client),
-        _fetch_batch(make_prompt(2), id_offset=BATCH_SIZE, client=client),
-    )
-    return batch1 + batch2
+    batches = await asyncio.gather(*[
+        _fetch_batch(make_prompt(), id_offset=i * BATCH_SIZE, client=client)
+        for i in range(num_batches)
+    ])
+    return [s for batch in batches for s in batch]
 
 
 async def run_filtered(boolean: BooleanQueryResult, entity: EntityResult,
                        smart_prompt: str, client: anthropic.AsyncAnthropic) -> list[Snippet]:
-    """Generate filtered snippets in two concurrent batches of 50."""
+    """Generate 100 filtered snippets across 5 concurrent batches of 20."""
+    num_batches = SNIPPET_COUNT // BATCH_SIZE
+
     def make_prompt() -> str:
         return SNIPPET_GENERATION_FILTERED_USER.format(
             count=BATCH_SIZE,
@@ -89,8 +91,8 @@ async def run_filtered(boolean: BooleanQueryResult, entity: EntityResult,
             smart_prompt=smart_prompt,
         )
 
-    batch1, batch2 = await asyncio.gather(
-        _fetch_batch(make_prompt(), id_offset=0, client=client),
-        _fetch_batch(make_prompt(), id_offset=BATCH_SIZE, client=client),
-    )
-    return batch1 + batch2
+    batches = await asyncio.gather(*[
+        _fetch_batch(make_prompt(), id_offset=i * BATCH_SIZE, client=client)
+        for i in range(num_batches)
+    ])
+    return [s for batch in batches for s in batch]

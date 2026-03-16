@@ -7,7 +7,7 @@ Return ONLY a valid JSON array of snippet objects. Each object must match exactl
   "source": "twitter" | "reddit" | "linkedin" | "news" | "instagram" | "forum",
   "author": "realistic author name",
   "handle": "@handle or u/username or Author Name",
-  "text": "the snippet text (50-200 chars)",
+  "text": "the snippet text (40-120 chars)",
   "published_at": "2026-03-XX THH:MM:00Z",
   "url": "https://example.com/fakeXXX",
   "relevance_score": null,
