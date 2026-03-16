@@ -8,6 +8,9 @@ SNIPPET_COUNT = 100
 NOISE_RATIO = 0.40  # 40% noise in initial fetch
 
 
+VALID_SOURCES = {"twitter", "reddit", "linkedin", "news", "instagram", "forum"}
+
+
 def _parse_snippets(raw: str) -> list[Snippet]:
     """Extract JSON array from Claude response and parse into Snippet objects."""
     # Strip markdown code fences if present
@@ -22,6 +25,9 @@ def _parse_snippets(raw: str) -> list[Snippet]:
     for i, item in enumerate(data):
         # Ensure unique IDs
         item["id"] = item.get("id") or f"snip_{i+1:03d}"
+        # Normalize source — fall back to "forum" for any unrecognised platform
+        if item.get("source") not in VALID_SOURCES:
+            item["source"] = "forum"
         # Null out scoring fields — they get populated by relevance_scoring step
         item["relevance_score"] = None
         item["relevance_label"] = None
