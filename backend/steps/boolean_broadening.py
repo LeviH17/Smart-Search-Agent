@@ -1,7 +1,7 @@
 import json
 import anthropic
 from models import BooleanQueryResult, ScoringResult, EntityResult
-from prompts import BOOLEAN_BROADENING_SYSTEM, BOOLEAN_BROADENING_USER
+from prompts import BOOLEAN_BROADENING_SYSTEM
 
 
 async def run(current_boolean: BooleanQueryResult, scoring: ScoringResult,
@@ -10,6 +10,7 @@ async def run(current_boolean: BooleanQueryResult, scoring: ScoringResult,
 
     noise_snippets = [s for s in scoring.snippets if s.relevance_label == "Irrelevant"]
     relevant_snippets = [s for s in scoring.snippets if s.relevance_label == "Relevant"]
+    somewhat_relevant = sum(1 for s in scoring.snippets if s.relevance_label == "Somewhat Relevant")
 
     noise_examples = "\n".join(
         f'- "{s.text[:150]}..." (reason: {s.relevance_reason})'
@@ -21,24 +22,28 @@ async def run(current_boolean: BooleanQueryResult, scoring: ScoringResult,
         for s in relevant_snippets[:10]
     ) or "None"
 
-    # Escape any braces in dynamic content so .format() doesn't misinterpret them
-    noise_examples = noise_examples.replace("{", "{{").replace("}", "}}")
-    relevant_examples = relevant_examples.replace("{", "{{").replace("}", "}}")
-
-    somewhat_relevant = sum(1 for s in scoring.snippets if s.relevance_label == "Somewhat Relevant")
-
-    user_content = BOOLEAN_BROADENING_USER.format(
-        original_query=current_boolean.query,
-        precision=scoring.precision,
-        iteration=iteration + 1,
-        entity_name=entity.entityName,
-        entity_type=entity.entityType,
-        total=len(scoring.snippets),
-        relevant=sum(1 for s in scoring.snippets if s.relevance_label == "Relevant"),
-        somewhat_relevant=somewhat_relevant,
-        irrelevant=len(noise_snippets),
-        noise_examples=noise_examples,
-        relevant_examples=relevant_examples
+    # Build prompt as an f-string to avoid .format() choking on braces in snippet text
+    precision_pct = f"{scoring.precision:.0%}"
+    user_content = (
+        f'Original query: "{current_boolean.query}"\n'
+        f"Current precision: {precision_pct} (target: 80%)\n"
+        f"Iteration: {iteration + 1}\n"
+        f"\n"
+        f"Entity: {entity.entityName} ({entity.entityType})\n"
+        f"\n"
+        f"Scoring breakdown:\n"
+        f"- Total snippets scored: {len(scoring.snippets)}\n"
+        f"- Relevant: {sum(1 for s in scoring.snippets if s.relevance_label == 'Relevant')}\n"
+        f"- Somewhat Relevant: {somewhat_relevant}\n"
+        f"- Irrelevant: {len(noise_snippets)}\n"
+        f"\n"
+        f"Examples of IRRELEVANT snippets that slipped through:\n"
+        f"{noise_examples}\n"
+        f"\n"
+        f"Examples of RELEVANT snippets that were correctly captured:\n"
+        f"{relevant_examples}\n"
+        f"\n"
+        f"Improve the query to increase precision. Return JSON only."
     )
 
     response = await client.messages.create(

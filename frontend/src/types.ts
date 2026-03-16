@@ -89,6 +89,7 @@ export interface StepState {
   description: string;
   status: StepStatus;
   result: StepResultData | null;
+  errorMessage: string | null;
   iteration: number;
   startedAt: number | null;
   completedAt: number | null;

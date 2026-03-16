@@ -55,6 +55,7 @@ export function usePipeline() {
         description: update.description ?? "",
         status: "pending",
         result: null,
+        errorMessage: null,
         iteration,
         startedAt: null,
         completedAt: null,
@@ -103,7 +104,9 @@ export function usePipeline() {
         upsertStep(stepId, iteration, {
           status: "failed",
           completedAt: Date.now(),
+          errorMessage: (payload.message as string) ?? "Unknown error",
         });
+        setIsLoading(false);
         break;
       }
 

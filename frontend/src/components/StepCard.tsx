@@ -88,6 +88,13 @@ export function StepCard({ step, awaitingBooleanConfirm, onBooleanConfirm }: Ste
         <ElapsedBadge startedAt={step.startedAt} completedAt={step.completedAt} />
       </div>
 
+      {/* Error message */}
+      {step.status === "failed" && step.errorMessage && (
+        <div className="px-4 py-3 bg-red-50 border-t border-red-100">
+          <p className="text-xs text-red-600 font-mono break-all">{step.errorMessage}</p>
+        </div>
+      )}
+
       {/* Body */}
       {step.result && (step.status === "done" || awaitingBooleanConfirm) && (
         <div className="px-4 py-4">
