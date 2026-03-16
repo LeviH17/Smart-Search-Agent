@@ -21,6 +21,10 @@ async def run(current_boolean: BooleanQueryResult, scoring: ScoringResult,
         for s in relevant_snippets[:10]
     ) or "None"
 
+    # Escape any braces in dynamic content so .format() doesn't misinterpret them
+    noise_examples = noise_examples.replace("{", "{{").replace("}", "}}")
+    relevant_examples = relevant_examples.replace("{", "{{").replace("}", "}}")
+
     somewhat_relevant = sum(1 for s in scoring.snippets if s.relevance_label == "Somewhat Relevant")
 
     user_content = BOOLEAN_BROADENING_USER.format(
