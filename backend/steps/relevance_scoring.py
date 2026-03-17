@@ -43,11 +43,11 @@ async def _score_batch(batch: list[Snippet], intent: str, entity: EntityResult,
 
 async def run(snippets: list[Snippet], entity: EntityResult, intent: str,
               iteration: int, client: anthropic.AsyncAnthropic) -> ScoringResult:
-    # Split into batches and score concurrently
+    # Score batches sequentially to stay within Haiku's 10k tokens/min rate limit
     batches = [snippets[i:i + BATCH_SIZE] for i in range(0, len(snippets), BATCH_SIZE)]
-    batch_results = await asyncio.gather(*[
-        _score_batch(batch, intent, entity, client) for batch in batches
-    ])
+    batch_results = []
+    for batch in batches:
+        batch_results.append(await _score_batch(batch, intent, entity, client))
 
     # Flatten results into a lookup map
     result_map: dict[str, dict] = {}

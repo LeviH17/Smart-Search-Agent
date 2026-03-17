@@ -31,7 +31,7 @@ async def run_pipeline(
     Main pipeline orchestrator.
     emit(event_type, step_id, payload, iteration)
     """
-    client = anthropic.AsyncAnthropic()
+    client = anthropic.AsyncAnthropic(max_retries=5)
 
     # ── Phase 2: boolean override provided — skip setup steps ─────────────────
     if request.entity_override and request.boolean_override:

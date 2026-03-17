@@ -69,16 +69,16 @@ async def run(boolean: BooleanQueryResult, entity: EntityResult,
             boolean_query=boolean.query,
         )
 
-    batches = await asyncio.gather(*[
-        _fetch_batch(make_prompt(), id_offset=i * BATCH_SIZE, client=client)
-        for i in range(num_batches)
-    ])
+    # Sequential to stay within Haiku's 10k tokens/min rate limit
+    batches = []
+    for i in range(num_batches):
+        batches.append(await _fetch_batch(make_prompt(), id_offset=i * BATCH_SIZE, client=client))
     return [s for batch in batches for s in batch]
 
 
 async def run_filtered(boolean: BooleanQueryResult, entity: EntityResult,
                        smart_prompt: str, client: anthropic.AsyncAnthropic) -> list[Snippet]:
-    """Generate 100 filtered snippets across 5 concurrent batches of 20."""
+    """Generate 100 filtered snippets across 5 sequential batches of 20."""
     num_batches = SNIPPET_COUNT // BATCH_SIZE
 
     def make_prompt() -> str:
@@ -92,8 +92,7 @@ async def run_filtered(boolean: BooleanQueryResult, entity: EntityResult,
             smart_prompt=smart_prompt,
         )
 
-    batches = await asyncio.gather(*[
-        _fetch_batch(make_prompt(), id_offset=i * BATCH_SIZE, client=client)
-        for i in range(num_batches)
-    ])
+    batches = []
+    for i in range(num_batches):
+        batches.append(await _fetch_batch(make_prompt(), id_offset=i * BATCH_SIZE, client=client))
     return [s for batch in batches for s in batch]
