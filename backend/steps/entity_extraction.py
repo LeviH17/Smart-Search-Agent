@@ -1,4 +1,5 @@
 import json
+from json_repair import repair_json
 import anthropic
 from models import PipelineRequest, EntityResult
 from prompts import ENTITY_EXTRACTION_SYSTEM, ENTITY_EXTRACTION_USER
@@ -29,5 +30,5 @@ async def run(request: PipelineRequest, client: anthropic.AsyncAnthropic) -> Ent
             raw = raw[4:]
     raw = raw.strip()
 
-    data = json.loads(raw)
+    data = json.loads(repair_json(raw))
     return EntityResult(**data)

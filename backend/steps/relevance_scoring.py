@@ -1,6 +1,7 @@
 import json
 import asyncio
 import anthropic
+from json_repair import repair_json
 from models import Snippet, ScoringResult, EntityResult
 from prompts import RELEVANCE_SCORING_SYSTEM, RELEVANCE_SCORING_BATCH_USER
 
@@ -37,7 +38,7 @@ async def _score_batch(batch: list[Snippet], intent: str, entity: EntityResult,
             raw = raw[4:]
     raw = raw.strip()
 
-    return json.loads(raw)
+    return json.loads(repair_json(raw))
 
 
 async def run(snippets: list[Snippet], entity: EntityResult, intent: str,

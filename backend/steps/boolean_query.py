@@ -1,4 +1,5 @@
 import json
+from json_repair import repair_json
 import anthropic
 from models import EntityResult, BooleanQueryResult
 from prompts import BOOLEAN_QUERY_SYSTEM, BOOLEAN_QUERY_USER
@@ -26,5 +27,5 @@ async def run(entity: EntityResult, query: str, client: anthropic.AsyncAnthropic
             raw = raw[4:]
     raw = raw.strip()
 
-    data = json.loads(raw)
+    data = json.loads(repair_json(raw))
     return BooleanQueryResult(**data)

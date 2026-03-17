@@ -1,4 +1,5 @@
 import json
+from json_repair import repair_json
 import anthropic
 from models import BooleanQueryResult, EntityResult, ScoringResult, SmartPromptResult
 from prompts import SMART_PROMPT_SYSTEM, SMART_PROMPT_USER
@@ -31,5 +32,5 @@ async def run(boolean: BooleanQueryResult, entity: EntityResult,
             raw = raw[4:]
     raw = raw.strip()
 
-    data = json.loads(raw)
+    data = json.loads(repair_json(raw))
     return SmartPromptResult(**data)

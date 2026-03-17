@@ -1,4 +1,5 @@
 import json
+from json_repair import repair_json
 import anthropic
 from models import PipelineRequest
 from prompts import INTENT_CHECK_SYSTEM, INTENT_CHECK_USER
@@ -35,7 +36,7 @@ async def check(request: PipelineRequest, client: anthropic.AsyncAnthropic) -> t
             raw = raw[4:]
     raw = raw.strip()
 
-    data = json.loads(raw)
+    data = json.loads(repair_json(raw))
     sufficient = data.get("sufficient", True)
     question = data.get("question") or ""
     suggestions = data.get("suggestions") or []

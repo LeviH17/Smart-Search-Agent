@@ -1,4 +1,5 @@
 import json
+from json_repair import repair_json
 import anthropic
 from models import BooleanQueryResult, ScoringResult, EntityResult
 from prompts import BOOLEAN_BROADENING_SYSTEM
@@ -60,5 +61,5 @@ async def run(current_boolean: BooleanQueryResult, scoring: ScoringResult,
             raw = raw[4:]
     raw = raw.strip()
 
-    data = json.loads(raw)
+    data = json.loads(repair_json(raw))
     return BooleanQueryResult(**data)
